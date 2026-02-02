@@ -46,7 +46,7 @@ function groupByWeek(dates) {
 }
 
 export function CalendarHeatmap({ specificHabitId = null }) {
-    const { habits, getHabitHistory } = useHabit();
+    const { habits } = useHabits();
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
     // Calculate completion data

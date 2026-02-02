@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Flame, Calendar, Trash2, Edit2, Check, X, Target } from "lucide-react";
 import { CalendarHeatmap } from "./CalendarHeatmap";
+import { HabitMatrix } from "./HabitMatrix";
 import { Card, CardContent } from "@/components/ui/card";
 
 const ICONS = ["🎯", "💧", "🏃", "🧘", "📚", "💊", "💪", "🥗", "🧠", "💼", "🧹", "🪴", "🎨", "🎵", "💰"];
@@ -174,7 +175,6 @@ export function TaskDetailDialog({ habit, open, onOpenChange }) {
                             {/* Delete Option */}
                             <div className="pt-4 border-t">
                                 <Button
-                                    variant="destructive"
                                     variant="ghost"
                                     className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive justify-start px-0"
                                     onClick={handleDelete}
@@ -188,7 +188,7 @@ export function TaskDetailDialog({ habit, open, onOpenChange }) {
                         <TabsContent value="history" className="mt-4">
                             <Card className="border-none shadow-none bg-muted/20">
                                 <CardContent className="p-4">
-                                    <CalendarHeatmap specificHabitId={habit.id} />
+                                    <HabitMatrix habits={[habit]} mode="month" />
                                 </CardContent>
                             </Card>
                         </TabsContent>

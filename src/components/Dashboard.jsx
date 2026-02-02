@@ -4,7 +4,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AddHabitDialog } from "./AddHabitDialog";
 import { HabitList } from "./HabitList";
 import { CalendarHeatmap } from "./CalendarHeatmap";
-import { Calendar } from "lucide-react";
+import { DashboardStats } from "./DashboardStats";
+import { HabitMatrix } from "./HabitMatrix"; // Replaces MonthCalendar and List view for history
+import { Calendar, LayoutGrid, List } from "lucide-react";
 
 function getToday() {
     return new Date().toISOString().split("T")[0];
@@ -12,9 +14,10 @@ function getToday() {
 
 const VIEW_OPTIONS = [
     { value: "today", label: "Today" },
-    { value: "week", label: "This Week" },
-    { value: "month", label: "This Month" },
-    { value: "all", label: "All Habits" },
+    { value: "week", label: "Week" },
+    { value: "month", label: "Month" },
+    { value: "year", label: "Year" },
+    { value: "all", label: "All" },
 ];
 
 export function Dashboard({ user }) {
@@ -25,20 +28,17 @@ export function Dashboard({ user }) {
     // Data filtering
     const todaysHabits = useMemo(() => getTodaysHabits(), [habits]);
 
-    // For 'Week' view, currently we just show all active habits (future: specific weekly schedule)
-    const activeHabits = habits;
-
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-background">
-            <div className="container mx-auto px-4 py-8 max-w-4xl animate-in fade-in duration-500">
+        <div className="min-h-[calc(100vh-4rem)] bg-black text-white selection:bg-primary/30">
+            <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold tracking-tight mb-2">
-                            Hello, <span className="text-primary">{user?.name || "Builder"}</span>
+                        <h1 className="text-3xl font-bold tracking-tight mb-2">
+                            Welcome back, <span className="text-primary">{user?.name || "Builder"}</span>
                         </h1>
-                        <p className="text-muted-foreground text-lg flex items-center gap-2">
+                        <p className="text-slate-400 flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
                             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                         </p>
@@ -46,17 +46,22 @@ export function Dashboard({ user }) {
                     <AddHabitDialog />
                 </div>
 
+                {/* Stats Overview */}
+                <div className="animate-in slide-in-from-bottom-2 duration-500 delay-100">
+                    <DashboardStats habits={habits} />
+                </div>
+
                 {/* Main Content Area */}
-                <div className="space-y-8">
-                    {/* Centered View Switcher */}
-                    <div className="flex justify-center mb-8">
-                        <Tabs value={view} onValueChange={setView} className="w-full max-w-md">
-                            <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50 p-1 rounded-full">
+                <div className="space-y-6">
+                    {/* View Switcher */}
+                    <div className="flex items-center justify-between mb-6">
+                        <Tabs value={view} onValueChange={setView} className="w-full">
+                            <TabsList className="bg-white/5 border border-white/5 p-1 rounded-full h-12 w-full max-w-lg mx-auto md:mx-0">
                                 {VIEW_OPTIONS.map((option) => (
                                     <TabsTrigger
                                         key={option.value}
                                         value={option.value}
-                                        className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                                        className="rounded-full data-[state=active]:bg-white/10 data-[state=active]:text-white text-slate-400 transition-all flex-1"
                                     >
                                         {option.label}
                                     </TabsTrigger>
@@ -70,8 +75,11 @@ export function Dashboard({ user }) {
                         {view === "today" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
                                 <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold">Today's Tasks</h2>
-                                    <span className="text-muted-foreground text-sm">{todaysHabits.length} tasks</span>
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <List className="h-5 w-5 text-primary" />
+                                        Today's Tasks
+                                    </h2>
+                                    <span className="text-slate-400 text-sm">{todaysHabits.length} tasks</span>
                                 </div>
                                 <HabitList habits={todaysHabits} date={today} />
                             </div>
@@ -79,20 +87,22 @@ export function Dashboard({ user }) {
 
                         {view === "week" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                                <div className="text-center py-12 bg-muted/20 rounded-xl border border-dashed border-muted">
-                                    <h3 className="text-lg font-medium">Weekly Overview</h3>
-                                    <p className="text-muted-foreground mb-6">Here are all your active habits for the week.</p>
-                                    <HabitList habits={activeHabits} date={today} />
-                                </div>
+                                <HabitMatrix habits={habits} mode="week" />
                             </div>
                         )}
 
                         {view === "month" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                                <div className="bg-muted/10 p-6 rounded-2xl border border-muted/20">
+                                <HabitMatrix habits={habits} mode="month" />
+                            </div>
+                        )}
+
+                        {view === "year" && (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                                <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
                                     <div className="mb-6">
-                                        <h2 className="text-xl font-semibold mb-1">Monthly Activity</h2>
-                                        <p className="text-muted-foreground">Visualize your consistency over time.</p>
+                                        <h2 className="text-xl font-semibold mb-1 text-white">Yearly Activity</h2>
+                                        <p className="text-slate-400">Your long-term consistency visualization.</p>
                                     </div>
                                     <CalendarHeatmap />
                                 </div>
@@ -102,8 +112,11 @@ export function Dashboard({ user }) {
                         {view === "all" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
                                 <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold">All Habits</h2>
-                                    <span className="text-muted-foreground text-sm">{habits.length} total</span>
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <LayoutGrid className="h-5 w-5 text-primary" />
+                                        All Habits
+                                    </h2>
+                                    <span className="text-slate-400 text-sm">{habits.length} total</span>
                                 </div>
                                 <HabitList habits={habits} date={today} />
                             </div>
