@@ -1,4 +1,14 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
+import { isFirebaseConfigured } from "@/lib/firebase";
+import {
+    subscribeToHabits,
+    addHabit as addHabitToDb,
+    updateHabit as updateHabitInDb,
+    deleteHabitFromDb,
+    subscribeToDailyLogs,
+    saveDailyLog,
+} from "@/lib/databaseService";
 
 const HabitContext = createContext(null);
 
@@ -6,18 +16,15 @@ const getToday = () => new Date().toISOString().split("T")[0];
 
 const getDayOfWeek = (dateStr) => {
     const d = new Date(dateStr);
-    return d.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    return d.getDay();
 };
 
 const isHabitDueOnDate = (habit, dateStr) => {
     if (habit.frequency === "daily") return true;
     if (habit.frequency === "one-time") {
-        return habit.targetDate === dateStr && !habit.history[dateStr];
+        return habit.targetDate === dateStr && !habit.history?.[dateStr];
     }
-    if (habit.frequency === "weekly") {
-        // Due any day of the week, user completes targetCount times
-        return true;
-    }
+    if (habit.frequency === "weekly") return true;
     if (habit.frequency === "custom") {
         const dayOfWeek = getDayOfWeek(dateStr);
         return habit.customDays?.includes(dayOfWeek);
@@ -26,68 +33,111 @@ const isHabitDueOnDate = (habit, dateStr) => {
 };
 
 export function HabitProvider({ children }) {
-    const [habits, setHabits] = useState(() => {
-        const saved = localStorage.getItem("innerstack-habits-v2");
-        return saved ? JSON.parse(saved) : [];
-    });
+    const { user } = useAuth();
+    const [habits, setHabits] = useState([]);
+    const [dailyLogs, setDailyLogs] = useState({});
+    const [loading, setLoading] = useState(true);
+    const firebaseEnabled = isFirebaseConfigured();
 
-    const [dailyLogs, setDailyLogs] = useState(() => {
-        const saved = localStorage.getItem("innerstack-daily-logs");
-        return saved ? JSON.parse(saved) : {};
-    });
+    // Load data on user change
+    useEffect(() => {
+        if (!user) {
+            setHabits([]);
+            setDailyLogs({});
+            setLoading(false);
+            return;
+        }
+
+        if (firebaseEnabled) {
+            // Subscribe to Firebase Realtime Database
+            const unsubHabits = subscribeToHabits(user.uid, (data) => {
+                setHabits(data);
+                setLoading(false);
+            });
+            const unsubLogs = subscribeToDailyLogs(user.uid, setDailyLogs);
+            return () => {
+                unsubHabits();
+                unsubLogs();
+            };
+        } else {
+            // Offline mode - use localStorage
+            const savedHabits = localStorage.getItem(`innerstack-habits-${user.uid}`);
+            const savedLogs = localStorage.getItem(`innerstack-logs-${user.uid}`);
+            setHabits(savedHabits ? JSON.parse(savedHabits) : []);
+            setDailyLogs(savedLogs ? JSON.parse(savedLogs) : {});
+            setLoading(false);
+        }
+    }, [user, firebaseEnabled]);
+
+    // Persist to localStorage in offline mode
+    useEffect(() => {
+        if (!firebaseEnabled && user) {
+            localStorage.setItem(`innerstack-habits-${user.uid}`, JSON.stringify(habits));
+        }
+    }, [habits, user, firebaseEnabled]);
 
     useEffect(() => {
-        localStorage.setItem("innerstack-habits-v2", JSON.stringify(habits));
-    }, [habits]);
+        if (!firebaseEnabled && user) {
+            localStorage.setItem(`innerstack-logs-${user.uid}`, JSON.stringify(dailyLogs));
+        }
+    }, [dailyLogs, user, firebaseEnabled]);
 
-    useEffect(() => {
-        localStorage.setItem("innerstack-daily-logs", JSON.stringify(dailyLogs));
-    }, [dailyLogs]);
-
-    const addHabit = (habit) => {
+    const addHabit = async (habit) => {
         const newHabit = {
-            id: Date.now().toString(),
             name: habit.name,
             description: habit.description || "",
             icon: habit.icon || "🎯",
             frequency: habit.frequency || "daily",
             customDays: habit.customDays || [],
-            targetCount: habit.targetCount || 1, // For weekly habits
-            targetDate: habit.targetDate || null, // For one-time habits
+            targetCount: habit.targetCount || 1,
+            targetDate: habit.targetDate || null,
             chainFromId: habit.chainFromId || null,
             category: habit.category || "general",
             history: {},
-            createdAt: new Date().toISOString(),
         };
-        setHabits((prev) => [...prev, newHabit]);
-        return newHabit;
+
+        if (firebaseEnabled && user) {
+            await addHabitToDb(user.uid, newHabit);
+        } else {
+            const localHabit = {
+                ...newHabit,
+                id: Date.now().toString(),
+                createdAt: Date.now(),
+            };
+            setHabits((prev) => [...prev, localHabit]);
+        }
     };
 
-    const updateHabit = (id, updates) => {
-        setHabits((prev) =>
-            prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
-        );
+    const updateHabit = async (id, updates) => {
+        if (firebaseEnabled && user) {
+            await updateHabitInDb(user.uid, id, updates);
+        } else {
+            setHabits((prev) =>
+                prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
+            );
+        }
     };
 
-    const deleteHabit = (id) => {
-        setHabits((prev) => prev.filter((h) => h.id !== id));
+    const deleteHabit = async (id) => {
+        if (firebaseEnabled && user) {
+            await deleteHabitFromDb(user.uid, id);
+        } else {
+            setHabits((prev) => prev.filter((h) => h.id !== id));
+        }
     };
 
-    const toggleHabitCompletion = (id, date = getToday()) => {
-        setHabits((prev) =>
-            prev.map((h) => {
-                if (h.id === id) {
-                    const newHistory = { ...h.history };
-                    if (newHistory[date]) {
-                        delete newHistory[date];
-                    } else {
-                        newHistory[date] = true;
-                    }
-                    return { ...h, history: newHistory };
-                }
-                return h;
-            })
-        );
+    const toggleHabitCompletion = async (id, date = getToday()) => {
+        const habit = habits.find((h) => h.id === id);
+        if (!habit) return;
+
+        const newHistory = { ...(habit.history || {}) };
+        if (newHistory[date]) {
+            delete newHistory[date];
+        } else {
+            newHistory[date] = true;
+        }
+
+        await updateHabit(id, { history: newHistory });
     };
 
     const getHabitsForDate = (dateStr) => {
@@ -103,13 +153,13 @@ export function HabitProvider({ children }) {
         let streak = 0;
         let date = new Date();
 
-        while (true) {
+        for (let i = 0; i < 365; i++) {
             const dateStr = date.toISOString().split("T")[0];
             if (!isHabitDueOnDate(habit, dateStr)) {
                 date.setDate(date.getDate() - 1);
                 continue;
             }
-            if (habit.history[dateStr]) {
+            if (habit.history?.[dateStr]) {
                 streak++;
                 date.setDate(date.getDate() - 1);
             } else {
@@ -125,9 +175,8 @@ export function HabitProvider({ children }) {
 
     const getAffectedByBreak = (habitId, dateStr = getToday()) => {
         const habit = habits.find((h) => h.id === habitId);
-        if (!habit || habit.history[dateStr]) return [];
+        if (!habit || habit.history?.[dateStr]) return [];
 
-        // Find all habits that chain from this one
         const affected = [];
         const findChained = (id) => {
             const chained = habits.filter((h) => h.chainFromId === id);
@@ -140,25 +189,29 @@ export function HabitProvider({ children }) {
         return affected;
     };
 
-    const logDailyStats = (date, stats) => {
-        setDailyLogs((prev) => ({
-            ...prev,
-            [date]: { ...prev[date], ...stats, date },
-        }));
+    const logDailyStats = async (date, stats) => {
+        if (firebaseEnabled && user) {
+            await saveDailyLog(user.uid, date, stats);
+        } else {
+            setDailyLogs((prev) => ({
+                ...prev,
+                [date]: { ...prev[date], ...stats, date },
+            }));
+        }
     };
 
-    const getDailyLog = (date) => {
-        return dailyLogs[date] || null;
-    };
+    const getDailyLog = (date) => dailyLogs[date] || null;
 
     const getAllCompletionDates = () => {
         const dates = {};
         habits.forEach((habit) => {
-            Object.keys(habit.history).forEach((date) => {
-                if (habit.history[date]) {
-                    dates[date] = (dates[date] || 0) + 1;
-                }
-            });
+            if (habit.history) {
+                Object.keys(habit.history).forEach((date) => {
+                    if (habit.history[date]) {
+                        dates[date] = (dates[date] || 0) + 1;
+                    }
+                });
+            }
         });
         return dates;
     };
@@ -166,6 +219,7 @@ export function HabitProvider({ children }) {
     const value = {
         habits,
         dailyLogs,
+        loading,
         addHabit,
         updateHabit,
         deleteHabit,

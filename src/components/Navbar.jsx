@@ -1,8 +1,9 @@
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "./ui/button"
 import { LayoutDashboard, User } from "lucide-react"
+import { AuthDialog } from "./AuthDialog"
 
-export function Navbar({ user, onLogin, onLogout, currentPage, onNavigate }) {
+export function Navbar({ user, onLogout, currentPage, onNavigate }) {
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/80 backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -37,9 +38,8 @@ export function Navbar({ user, onLogin, onLogout, currentPage, onNavigate }) {
                     )}
                     {!user && (
                         <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
-                            <a href="#features" className="hover:text-primary transition">Features</a>
-                            <a href="#pricing" className="hover:text-primary transition">Pricing</a>
-                            <a href="#about" className="hover:text-primary transition">About</a>
+                            <a href="#features" className="hover:text-foreground transition">Features</a>
+                            <a href="#pricing" className="hover:text-foreground transition">Pricing</a>
                         </div>
                     )}
                 </div>
@@ -50,9 +50,9 @@ export function Navbar({ user, onLogin, onLogout, currentPage, onNavigate }) {
                             Logout
                         </Button>
                     ) : (
-                        <Button onClick={onLogin} size="sm">
-                            Get Started
-                        </Button>
+                        <AuthDialog defaultTab="login">
+                            <Button size="sm">Sign In</Button>
+                        </AuthDialog>
                     )}
                 </div>
             </div>
