@@ -64,22 +64,22 @@ export function HabitHistory({ habit, isOpen }) {
                     No completion history yet.
                 </p>
             ) : (
-                <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 max-h-[200px] overflow-y-auto">
+                <div className="grid grid-cols-7 gap-2">
                     {historyEntries.map((entry) => (
                         <div
                             key={entry.date}
-                            className={`flex flex-col items-center p-2 rounded-lg text-xs transition-colors ${entry.completed
-                                    ? "bg-emerald-500/10 text-emerald-600"
-                                    : "bg-muted/50 text-muted-foreground"
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl text-xs transition-all ${entry.completed
+                                ? "bg-emerald-500/20 border border-emerald-500/30"
+                                : "bg-muted/80 border border-transparent"
                                 }`}
                             title={`${entry.date}: ${entry.completed ? "Completed" : "Not completed"}`}
                         >
                             {entry.completed ? (
-                                <Check className="h-4 w-4 mb-1" />
+                                <Check className="h-5 w-5 text-emerald-500 mb-1" />
                             ) : (
-                                <X className="h-4 w-4 mb-1 opacity-40" />
+                                <X className="h-5 w-5 text-muted-foreground/50 mb-1" />
                             )}
-                            <span className="text-[10px]">
+                            <span className="text-xs text-muted-foreground font-medium">
                                 {new Date(entry.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                             </span>
                         </div>

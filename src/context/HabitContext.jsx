@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import {
@@ -82,7 +82,7 @@ export function HabitProvider({ children }) {
         }
     }, [dailyLogs, user, firebaseEnabled]);
 
-    const addHabit = async (habit) => {
+    const addHabit = useCallback(async (habit) => {
         const newHabit = {
             name: habit.name,
             description: habit.description || "",
@@ -106,9 +106,9 @@ export function HabitProvider({ children }) {
             };
             setHabits((prev) => [...prev, localHabit]);
         }
-    };
+    }, [firebaseEnabled, user]);
 
-    const updateHabit = async (id, updates) => {
+    const updateHabit = useCallback(async (id, updates) => {
         if (firebaseEnabled && user) {
             await updateHabitInDb(user.uid, id, updates);
         } else {
@@ -116,17 +116,17 @@ export function HabitProvider({ children }) {
                 prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
             );
         }
-    };
+    }, [firebaseEnabled, user]);
 
-    const deleteHabit = async (id) => {
+    const deleteHabit = useCallback(async (id) => {
         if (firebaseEnabled && user) {
             await deleteHabitFromDb(user.uid, id);
         } else {
             setHabits((prev) => prev.filter((h) => h.id !== id));
         }
-    };
+    }, [firebaseEnabled, user]);
 
-    const toggleHabitCompletion = async (id, date = getToday()) => {
+    const toggleHabitCompletion = useCallback(async (id, date = getToday()) => {
         const habit = habits.find((h) => h.id === id);
         if (!habit) return;
 
@@ -137,16 +137,22 @@ export function HabitProvider({ children }) {
             newHistory[date] = true;
         }
 
-        await updateHabit(id, { history: newHistory });
-    };
+        if (firebaseEnabled && user) {
+            await updateHabitInDb(user.uid, id, { history: newHistory });
+        } else {
+            setHabits((prev) =>
+                prev.map((h) => (h.id === id ? { ...h, history: newHistory } : h))
+            );
+        }
+    }, [habits, firebaseEnabled, user]);
 
-    const getHabitsForDate = (dateStr) => {
+    const getHabitsForDate = useCallback((dateStr) => {
         return habits.filter((h) => isHabitDueOnDate(h, dateStr));
-    };
+    }, [habits]);
 
-    const getTodaysHabits = () => getHabitsForDate(getToday());
+    const getTodaysHabits = useCallback(() => getHabitsForDate(getToday()), [getHabitsForDate]);
 
-    const getStreak = (habitId) => {
+    const getStreak = useCallback((habitId) => {
         const habit = habits.find((h) => h.id === habitId);
         if (!habit) return 0;
 
@@ -167,13 +173,13 @@ export function HabitProvider({ children }) {
             }
         }
         return streak;
-    };
+    }, [habits]);
 
-    const getChainedHabits = (habitId) => {
+    const getChainedHabits = useCallback((habitId) => {
         return habits.filter((h) => h.chainFromId === habitId);
-    };
+    }, [habits]);
 
-    const getAffectedByBreak = (habitId, dateStr = getToday()) => {
+    const getAffectedByBreak = useCallback((habitId, dateStr = getToday()) => {
         const habit = habits.find((h) => h.id === habitId);
         if (!habit || habit.history?.[dateStr]) return [];
 
@@ -187,9 +193,9 @@ export function HabitProvider({ children }) {
         };
         findChained(habitId);
         return affected;
-    };
+    }, [habits]);
 
-    const logDailyStats = async (date, stats) => {
+    const logDailyStats = useCallback(async (date, stats) => {
         if (firebaseEnabled && user) {
             await saveDailyLog(user.uid, date, stats);
         } else {
@@ -198,11 +204,11 @@ export function HabitProvider({ children }) {
                 [date]: { ...prev[date], ...stats, date },
             }));
         }
-    };
+    }, [firebaseEnabled, user]);
 
-    const getDailyLog = (date) => dailyLogs[date] || null;
+    const getDailyLog = useCallback((date) => dailyLogs[date] || null, [dailyLogs]);
 
-    const getAllCompletionDates = () => {
+    const getAllCompletionDates = useCallback(() => {
         const dates = {};
         habits.forEach((habit) => {
             if (habit.history) {
@@ -214,7 +220,7 @@ export function HabitProvider({ children }) {
             }
         });
         return dates;
-    };
+    }, [habits]);
 
     const value = {
         habits,

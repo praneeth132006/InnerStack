@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Users, Star, GitFork, Heart, ExternalLink } from "lucide-react";
+import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Users, Star, GitFork, Heart, ExternalLink, ArrowRight, ChevronLeft, ChevronRight, Twitter, Linkedin, Github } from "lucide-react";
 
 const FEATURES = [
     {
@@ -103,7 +103,7 @@ const TESTIMONIALS = [
     },
 ];
 
-export function Hero() {
+export function Hero({ onNavigate }) {
     return (
         <>
             {/* Hero Section */}
@@ -133,12 +133,12 @@ export function Hero() {
                         transition={{ duration: 0.5, delay: 0.4 }}
                         className="flex justify-center gap-4"
                     >
-                        <AuthDialog defaultTab="signup">
-                            <Button size="lg" className="h-12 px-8 text-lg">Start for Free</Button>
-                        </AuthDialog>
-                        <AuthDialog defaultTab="login">
-                            <Button size="lg" variant="outline" className="h-12 px-8 text-lg">Sign In</Button>
-                        </AuthDialog>
+                        <Button size="lg" className="h-12 px-8 text-lg" onClick={() => onNavigate("auth")}>
+                            Start for Free
+                        </Button>
+                        <Button size="lg" variant="outline" className="h-12 px-8 text-lg" onClick={() => onNavigate("auth")}>
+                            Sign In
+                        </Button>
                     </motion.div>
                 </div>
 
@@ -293,6 +293,119 @@ export function Hero() {
                 </div>
             </section>
 
+            {/* Dashboard Preview CTA Section */}
+            <section className="py-20 bg-slate-900 text-white overflow-hidden">
+                <div className="container mx-auto px-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="grid lg:grid-cols-2 gap-12 items-center"
+                    >
+                        {/* Dashboard Preview Cards */}
+                        <div className="relative h-[400px]">
+                            {/* Ratings Card */}
+                            <motion.div
+                                initial={{ x: -20, y: 0 }}
+                                whileInView={{ x: 0, y: 0 }}
+                                viewport={{ once: true }}
+                                className="absolute top-0 left-0 bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-48"
+                            >
+                                <div className="text-xs text-slate-400 mb-1">Ratings</div>
+                                <div className="flex items-center gap-2 text-[10px] text-emerald-400 mb-2">
+                                    <span className="bg-emerald-500/20 px-2 py-0.5 rounded">Last 6 months</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl font-bold">8.14k</span>
+                                    <span className="text-emerald-400 text-xs">+18.2%</span>
+                                </div>
+                            </motion.div>
+
+                            {/* Calendar Card */}
+                            <motion.div
+                                initial={{ x: 0, y: 20 }}
+                                whileInView={{ x: 0, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.1 }}
+                                className="absolute top-16 left-32 bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-56"
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <ChevronLeft className="h-4 w-4 text-slate-400" />
+                                    <span className="text-sm font-medium">January 2026</span>
+                                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                                </div>
+                                <div className="grid grid-cols-7 gap-1 text-[10px] text-center mb-2">
+                                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+                                        <div key={d} className="text-slate-500">{d}</div>
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-7 gap-1 text-xs text-center">
+                                    {[...Array(31)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`w-6 h-6 flex items-center justify-center rounded-full ${i === 12 ? "bg-emerald-500 text-white" :
+                                                i === 10 ? "ring-2 ring-emerald-500" :
+                                                    "hover:bg-slate-700"
+                                                }`}
+                                        >
+                                            {i + 1}
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            {/* Stats Card */}
+                            <motion.div
+                                initial={{ x: 20, y: 0 }}
+                                whileInView={{ x: 0, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.2 }}
+                                className="absolute top-4 right-0 bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-52"
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-medium">Habit Status</span>
+                                </div>
+                                <div className="space-y-2">
+                                    {[
+                                        { label: "Excellent", pct: "55%", color: "bg-emerald-500", change: "+25%" },
+                                        { label: "Good", pct: "20%", color: "bg-blue-500", change: "+30%" },
+                                        { label: "Average", pct: "12%", color: "bg-yellow-500", change: "-15%" },
+                                    ].map((item) => (
+                                        <div key={item.label} className="flex items-center justify-between text-xs">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                                                <span className="text-slate-300">{item.label}</span>
+                                            </div>
+                                            <span className={item.change.startsWith("+") ? "text-emerald-400" : "text-red-400"}>
+                                                {item.change}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        {/* CTA Text */}
+                        <div className="text-center lg:text-left">
+                            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+                                Let's skip the chatter and start building!
+                            </h2>
+                            <p className="text-slate-400 text-lg mb-8 max-w-lg">
+                                With a variety of powerful features, you can effortlessly track your habits without any friction. Build your perfect routine with ease.
+                            </p>
+                            <Button
+                                size="lg"
+                                variant="secondary"
+                                className="h-12 px-8 text-lg gap-2 bg-white text-slate-900 hover:bg-slate-100"
+                                onClick={() => onNavigate("auth")}
+                            >
+                                Let's Started <ArrowRight className="h-5 w-5" />
+                            </Button>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
             {/* Open Source Section */}
             <section id="open-source" className="py-20 bg-muted/30">
                 <div className="container mx-auto px-4 text-center">
@@ -375,17 +488,60 @@ export function Hero() {
             </section>
 
             {/* Footer */}
-            <footer className="py-12 border-t">
+            <footer className="bg-slate-900 text-slate-300 py-16">
                 <div className="container mx-auto px-4">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="text-xl font-bold">InnerStack</div>
-                        <div className="flex gap-6 text-sm text-muted-foreground">
-                            <a href="#features" className="hover:text-foreground transition">Features</a>
-                            <a href="#pricing" className="hover:text-foreground transition">Pricing</a>
-                            <a href="https://github.com/praneeth622/InnerStack" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition">GitHub</a>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                        {/* Brand Column */}
+                        <div className="space-y-4">
+                            <h3 className="text-2xl font-bold text-white">InnerStack</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">
+                                Building better habits together. Open source, privacy-focused, and designed for your growth.
+                            </p>
+                            <div className="flex gap-4 pt-2">
+                                <a href="#" className="hover:text-white transition"><Twitter className="h-5 w-5" /></a>
+                                <a href="#" className="hover:text-white transition"><Github className="h-5 w-5" /></a>
+                                <a href="#" className="hover:text-white transition"><Linkedin className="h-5 w-5" /></a>
+                            </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            © 2026 InnerStack. All rights reserved.
+
+                        {/* Resources */}
+                        <div>
+                            <h4 className="text-white font-semibold mb-6">Resources</h4>
+                            <ul className="space-y-3 text-sm">
+                                <li><a href="#" className="hover:text-white transition">Blog</a></li>
+                                <li><a href="#" className="hover:text-white transition">Community</a></li>
+                                <li><a href="#" className="hover:text-white transition">Habit Guide</a></li>
+                                <li><a href="#" className="hover:text-white transition">Open Source</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Help & Support */}
+                        <div>
+                            <h4 className="text-white font-semibold mb-6">Help & Support</h4>
+                            <ul className="space-y-3 text-sm">
+                                <li><a href="#" className="hover:text-white transition">Help Center</a></li>
+                                <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
+                                <li><a href="#" className="hover:text-white transition">Feature Request</a></li>
+                                <li><a href="#" className="hover:text-white transition">Report a Bug</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Legal */}
+                        <div>
+                            <h4 className="text-white font-semibold mb-6">Legal</h4>
+                            <ul className="space-y-3 text-sm">
+                                <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
+                                <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
+                                <li><a href="#" className="hover:text-white transition">Cookie Policy</a></li>
+                                <li><a href="#" className="hover:text-white transition">Licenses</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+                        <p>© 2026 InnerStack. All rights reserved.</p>
+                        <p className="flex items-center gap-1">
+                            Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" /> by Praneeth
                         </p>
                     </div>
                 </div>

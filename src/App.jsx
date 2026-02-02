@@ -3,6 +3,8 @@ import { Navbar } from "@/components/Navbar"
 import { Hero } from "@/components/Hero"
 import { Dashboard } from "@/components/Dashboard"
 import { ProfilePage } from "@/components/ProfilePage"
+import { AuthPage } from "@/components/AuthPage"
+import { ErrorPage } from "@/components/ErrorPage"
 import { useState } from "react"
 
 function App() {
@@ -22,7 +24,9 @@ function App() {
         </div>
       )
     }
-    if (!user) return <Hero />
+    if (page === "auth") return <AuthPage onNavigate={setPage} />
+    if (page === "error") return <ErrorPage onNavigate={setPage} />
+    if (!user) return <Hero onNavigate={setPage} />
     if (page === "profile") return <ProfilePage user={user} onLogout={handleLogout} />
     return <Dashboard user={user} />
   }
