@@ -1,185 +1,114 @@
 import { useState, useMemo } from "react";
 import { useHabits } from "@/context/HabitContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AddHabitDialog } from "./AddHabitDialog";
 import { HabitList } from "./HabitList";
-import { MoodTracker } from "./MoodTracker";
 import { CalendarHeatmap } from "./CalendarHeatmap";
-import { Target, Calendar, TrendingUp } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 function getToday() {
     return new Date().toISOString().split("T")[0];
-}
-
-function getWeekDates() {
-    const dates = [];
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - dayOfWeek);
-
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(startOfWeek);
-        d.setDate(startOfWeek.getDate() + i);
-        dates.push(d.toISOString().split("T")[0]);
-    }
-    return dates;
-}
-
-function getMonthDates() {
-    const dates = [];
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    for (let i = 1; i <= daysInMonth; i++) {
-        dates.push(new Date(year, month, i).toISOString().split("T")[0]);
-    }
-    return dates;
 }
 
 const VIEW_OPTIONS = [
     { value: "today", label: "Today" },
     { value: "week", label: "This Week" },
     { value: "month", label: "This Month" },
-    { value: "all", label: "All" },
+    { value: "all", label: "All Habits" },
 ];
 
 export function Dashboard({ user }) {
-    const { habits, getTodaysHabits, getHabitsForDate } = useHabits();
+    const { habits, getTodaysHabits } = useHabits();
     const [view, setView] = useState("today");
     const today = getToday();
 
+    // Data filtering
     const todaysHabits = useMemo(() => getTodaysHabits(), [habits]);
 
-    const weekHabits = useMemo(() => {
-        const weekDates = getWeekDates();
-        const habitSet = new Map();
-        weekDates.forEach((date) => {
-            getHabitsForDate(date).forEach((h) => {
-                if (!habitSet.has(h.id)) habitSet.set(h.id, h);
-            });
-        });
-        return Array.from(habitSet.values());
-    }, [habits]);
-
-    const monthHabits = useMemo(() => {
-        const monthDates = getMonthDates();
-        const habitSet = new Map();
-        monthDates.forEach((date) => {
-            getHabitsForDate(date).forEach((h) => {
-                if (!habitSet.has(h.id)) habitSet.set(h.id, h);
-            });
-        });
-        return Array.from(habitSet.values());
-    }, [habits]);
-
-    const completedToday = todaysHabits.filter((h) => h.history && h.history[today]).length;
-    const totalToday = todaysHabits.length;
-    const progressPercent = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0;
-
-    const getHabitsForView = () => {
-        switch (view) {
-            case "today": return todaysHabits;
-            case "week": return weekHabits;
-            case "month": return monthHabits;
-            default: return habits;
-        }
-    };
+    // For 'Week' view, currently we just show all active habits (future: specific weekly schedule)
+    const activeHabits = habits;
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-bold">
-                        Welcome back, <span className="text-primary">{user?.name || "User"}</span>
-                    </h1>
-                    <p className="text-muted-foreground mt-1">
-                        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                    </p>
-                </div>
-                <AddHabitDialog />
-            </div>
+        <div className="min-h-[calc(100vh-4rem)] bg-background">
+            <div className="container mx-auto px-4 py-8 max-w-4xl animate-in fade-in duration-500">
 
-            {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-3 mb-8">
-                <Card className="border-none shadow-sm bg-gradient-to-br from-primary/10 to-primary/5">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Today's Progress</CardTitle>
-                        <Target className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{progressPercent}%</div>
-                        <p className="text-xs text-muted-foreground">{completedToday} of {totalToday} habits</p>
-                        <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                            <div
-                                className="h-full bg-primary rounded-full transition-all duration-500"
-                                style={{ width: `${progressPercent}%` }}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Habits</CardTitle>
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{habits.length}</div>
-                        <p className="text-xs text-muted-foreground">Active habits</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Streak</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-orange-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-orange-500">🔥</div>
-                        <p className="text-xs text-muted-foreground">Keep it up!</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Heatmap */}
-            <Card className="border-none shadow-md mb-8 overflow-hidden">
-                <CardHeader>
-                    <CardTitle className="text-lg">Your Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <CalendarHeatmap />
-                </CardContent>
-            </Card>
-
-            {/* Main Content - Two Column Layout */}
-            <div className="grid lg:grid-cols-3 gap-8">
-                {/* Habits Section */}
-                <div className="lg:col-span-2">
-                    {/* Enhanced Pill-style Tabs using shadcn Tabs */}
-                    <Tabs value={view} onValueChange={setView} className="mb-6">
-                        <TabsList className="inline-flex h-11 items-center justify-center rounded-full bg-muted/60 p-1 text-muted-foreground backdrop-blur-sm">
-                            {VIEW_OPTIONS.map((option) => (
-                                <TabsTrigger
-                                    key={option.value}
-                                    value={option.value}
-                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md hover:text-foreground"
-                                >
-                                    {option.label}
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-                    </Tabs>
-                    <HabitList habits={getHabitsForView()} date={today} />
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+                    <div>
+                        <h1 className="text-4xl font-bold tracking-tight mb-2">
+                            Hello, <span className="text-primary">{user?.name || "Builder"}</span>
+                        </h1>
+                        <p className="text-muted-foreground text-lg flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                        </p>
+                    </div>
+                    <AddHabitDialog />
                 </div>
 
-                {/* Sidebar - Mood Tracker */}
-                <div className="space-y-6">
-                    <MoodTracker />
+                {/* Main Content Area */}
+                <div className="space-y-8">
+                    {/* Centered View Switcher */}
+                    <div className="flex justify-center mb-8">
+                        <Tabs value={view} onValueChange={setView} className="w-full max-w-md">
+                            <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50 p-1 rounded-full">
+                                {VIEW_OPTIONS.map((option) => (
+                                    <TabsTrigger
+                                        key={option.value}
+                                        value={option.value}
+                                        className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                                    >
+                                        {option.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
+                    </div>
+
+                    {/* Content Views */}
+                    <div className="min-h-[400px]">
+                        {view === "today" && (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-xl font-semibold">Today's Tasks</h2>
+                                    <span className="text-muted-foreground text-sm">{todaysHabits.length} tasks</span>
+                                </div>
+                                <HabitList habits={todaysHabits} date={today} />
+                            </div>
+                        )}
+
+                        {view === "week" && (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                                <div className="text-center py-12 bg-muted/20 rounded-xl border border-dashed border-muted">
+                                    <h3 className="text-lg font-medium">Weekly Overview</h3>
+                                    <p className="text-muted-foreground mb-6">Here are all your active habits for the week.</p>
+                                    <HabitList habits={activeHabits} date={today} />
+                                </div>
+                            </div>
+                        )}
+
+                        {view === "month" && (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                                <div className="bg-muted/10 p-6 rounded-2xl border border-muted/20">
+                                    <div className="mb-6">
+                                        <h2 className="text-xl font-semibold mb-1">Monthly Activity</h2>
+                                        <p className="text-muted-foreground">Visualize your consistency over time.</p>
+                                    </div>
+                                    <CalendarHeatmap />
+                                </div>
+                            </div>
+                        )}
+
+                        {view === "all" && (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-xl font-semibold">All Habits</h2>
+                                    <span className="text-muted-foreground text-sm">{habits.length} total</span>
+                                </div>
+                                <HabitList habits={habits} date={today} />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
