@@ -87,9 +87,7 @@ export function Navbar({ user, onLogout, currentPage, onNavigate }) {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <AuthDialog defaultTab="login">
-                                <Button size="sm">Sign In</Button>
-                            </AuthDialog>
+                            <Button size="sm" onClick={() => onNavigate?.("auth")}>Sign In</Button>
                         )}
                     </div>
                 </div>

@@ -294,7 +294,7 @@ export function Hero({ onNavigate }) {
             </section>
 
             {/* Dashboard Preview CTA Section */}
-            <section className="py-20 bg-slate-900 text-white overflow-hidden">
+            <section className="py-20 bg-card text-card-foreground overflow-hidden border-y">
                 <div className="container mx-auto px-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -360,7 +360,7 @@ export function Hero({ onNavigate }) {
                                 whileInView={{ x: 0, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: 0.2 }}
-                                className="absolute top-4 right-0 bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-52"
+                                className="absolute top-4 left-[260px] bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-52 z-10"
                             >
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-sm font-medium">Habit Status</span>
@@ -488,60 +488,64 @@ export function Hero({ onNavigate }) {
             </section>
 
             {/* Footer */}
-            <footer className="bg-slate-900 text-slate-300 py-16">
+            <footer className="bg-black text-slate-400 py-20 border-t border-slate-800">
                 <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
                         {/* Brand Column */}
-                        <div className="space-y-4">
-                            <h3 className="text-2xl font-bold text-white">InnerStack</h3>
-                            <p className="text-sm text-slate-400 leading-relaxed">
-                                Building better habits together. Open source, privacy-focused, and designed for your growth.
+                        <div className="col-span-2 lg:col-span-2 space-y-6">
+                            <h3 className="text-2xl font-bold text-white tracking-tight">InnerStack</h3>
+                            <p className="text-sm leading-relaxed max-w-sm">
+                                Empowering your personal growth through data-driven habit tracking.
+                                Open source, privacy-first, and designed for humans.
                             </p>
-                            <div className="flex gap-4 pt-2">
-                                <a href="#" className="hover:text-white transition"><Twitter className="h-5 w-5" /></a>
-                                <a href="#" className="hover:text-white transition"><Github className="h-5 w-5" /></a>
-                                <a href="#" className="hover:text-white transition"><Linkedin className="h-5 w-5" /></a>
+                            <div className="flex gap-4">
+                                <a href="#" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 hover:text-white transition">
+                                    <Twitter className="h-4 w-4" />
+                                </a>
+                                <a href="#" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 hover:text-white transition">
+                                    <Github className="h-4 w-4" />
+                                </a>
+                                <a href="#" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 hover:text-white transition">
+                                    <Linkedin className="h-4 w-4" />
+                                </a>
                             </div>
                         </div>
 
-                        {/* Resources */}
-                        <div>
-                            <h4 className="text-white font-semibold mb-6">Resources</h4>
-                            <ul className="space-y-3 text-sm">
+                        {/* Links */}
+                        <div className="space-y-4">
+                            <h4 className="text-white font-medium">Product</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li><a href="#" className="hover:text-white transition">Features</a></li>
+                                <li><a href="#" className="hover:text-white transition">Pricing</a></li>
+                                <li><a href="#" className="hover:text-white transition">Changelog</a></li>
+                                <li><a href="#" className="hover:text-white transition">Roadmap</a></li>
+                            </ul>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h4 className="text-white font-medium">Community</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li><a href="#" className="hover:text-white transition">Discord</a></li>
+                                <li><a href="#" className="hover:text-white transition">GitHub</a></li>
+                                <li><a href="#" className="hover:text-white transition">Twitter</a></li>
                                 <li><a href="#" className="hover:text-white transition">Blog</a></li>
-                                <li><a href="#" className="hover:text-white transition">Community</a></li>
-                                <li><a href="#" className="hover:text-white transition">Habit Guide</a></li>
-                                <li><a href="#" className="hover:text-white transition">Open Source</a></li>
                             </ul>
                         </div>
 
-                        {/* Help & Support */}
-                        <div>
-                            <h4 className="text-white font-semibold mb-6">Help & Support</h4>
-                            <ul className="space-y-3 text-sm">
-                                <li><a href="#" className="hover:text-white transition">Help Center</a></li>
-                                <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
-                                <li><a href="#" className="hover:text-white transition">Feature Request</a></li>
-                                <li><a href="#" className="hover:text-white transition">Report a Bug</a></li>
-                            </ul>
-                        </div>
-
-                        {/* Legal */}
-                        <div>
-                            <h4 className="text-white font-semibold mb-6">Legal</h4>
-                            <ul className="space-y-3 text-sm">
-                                <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
-                                <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
-                                <li><a href="#" className="hover:text-white transition">Cookie Policy</a></li>
-                                <li><a href="#" className="hover:text-white transition">Licenses</a></li>
+                        <div className="space-y-4">
+                            <h4 className="text-white font-medium">Legal</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li><a href="#" className="hover:text-white transition">Privacy</a></li>
+                                <li><a href="#" className="hover:text-white transition">Terms</a></li>
+                                <li><a href="#" className="hover:text-white transition">Security</a></li>
                             </ul>
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+                    <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
                         <p>© 2026 InnerStack. All rights reserved.</p>
                         <p className="flex items-center gap-1">
-                            Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" /> by Praneeth
+                            Crafted with <Heart className="h-3 w-3 text-red-500 fill-red-500" /> by Praneeth
                         </p>
                     </div>
                 </div>
