@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Users, Star } from "lucide-react";
+import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Users, Star, GitFork, Heart, ExternalLink } from "lucide-react";
 
 const FEATURES = [
     {
@@ -290,6 +290,68 @@ export function Hero() {
                             </motion.div>
                         ))}
                     </div>
+                </div>
+            </section>
+
+            {/* Open Source Section */}
+            <section id="open-source" className="py-20 bg-muted/30">
+                <div className="container mx-auto px-4 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+                            <Heart className="h-4 w-4" />
+                            Open Source
+                        </div>
+                        <h2 className="text-3xl font-bold mb-4">Built in the Open</h2>
+                        <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+                            InnerStack is open source. Explore the code, contribute features, or fork it to make it your own.
+                        </p>
+
+                        <div className="flex flex-wrap justify-center gap-4 mb-8">
+                            <a
+                                href="https://github.com/praneeth132006/InnerStack"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button size="lg" className="gap-2">
+                                    <Star className="h-5 w-5" />
+                                    Star on GitHub
+                                </Button>
+                            </a>
+                            <a
+                                href="https://github.com/praneeth132006/InnerStack/fork"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button size="lg" variant="outline" className="gap-2">
+                                    <GitFork className="h-5 w-5" />
+                                    Fork Repository
+                                </Button>
+                            </a>
+                            <a
+                                href="https://github.com/praneeth132006/InnerStack/blob/main/CONTRIBUTING.md"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button size="lg" variant="outline" className="gap-2">
+                                    <ExternalLink className="h-5 w-5" />
+                                    Contribute
+                                </Button>
+                            </a>
+                        </div>
+
+                        <div className="flex justify-center gap-8 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                                JavaScript
+                            </div>
+                            <div>MIT License</div>
+                            <div>Built with React + Vite</div>
+                        </div>
+                    </motion.div>
                 </div>
             </section>
 

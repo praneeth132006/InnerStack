@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useHabits } from "@/context/HabitContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AddHabitDialog } from "./AddHabitDialog";
 import { HabitList } from "./HabitList";
 import { MoodTracker } from "./MoodTracker";
@@ -40,6 +40,13 @@ function getMonthDates() {
     return dates;
 }
 
+const VIEW_OPTIONS = [
+    { value: "today", label: "Today" },
+    { value: "week", label: "This Week" },
+    { value: "month", label: "This Month" },
+    { value: "all", label: "All" },
+];
+
 export function Dashboard({ user }) {
     const { habits, getTodaysHabits, getHabitsForDate } = useHabits();
     const [view, setView] = useState("today");
@@ -72,6 +79,15 @@ export function Dashboard({ user }) {
     const completedToday = todaysHabits.filter((h) => h.history && h.history[today]).length;
     const totalToday = todaysHabits.length;
     const progressPercent = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0;
+
+    const getHabitsForView = () => {
+        switch (view) {
+            case "today": return todaysHabits;
+            case "week": return weekHabits;
+            case "month": return monthHabits;
+            default: return habits;
+        }
+    };
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500">
@@ -144,30 +160,21 @@ export function Dashboard({ user }) {
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Habits Section */}
                 <div className="lg:col-span-2">
-                    <Tabs value={view} onValueChange={setView} className="w-full">
-                        <TabsList className="mb-4">
-                            <TabsTrigger value="today">Today</TabsTrigger>
-                            <TabsTrigger value="week">This Week</TabsTrigger>
-                            <TabsTrigger value="month">This Month</TabsTrigger>
-                            <TabsTrigger value="all">All</TabsTrigger>
+                    {/* Enhanced Pill-style Tabs using shadcn Tabs */}
+                    <Tabs value={view} onValueChange={setView} className="mb-6">
+                        <TabsList className="inline-flex h-11 items-center justify-center rounded-full bg-muted/60 p-1 text-muted-foreground backdrop-blur-sm">
+                            {VIEW_OPTIONS.map((option) => (
+                                <TabsTrigger
+                                    key={option.value}
+                                    value={option.value}
+                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md hover:text-foreground"
+                                >
+                                    {option.label}
+                                </TabsTrigger>
+                            ))}
                         </TabsList>
-
-                        <TabsContent value="today">
-                            <HabitList habits={todaysHabits} date={today} />
-                        </TabsContent>
-
-                        <TabsContent value="week">
-                            <HabitList habits={weekHabits} date={today} />
-                        </TabsContent>
-
-                        <TabsContent value="month">
-                            <HabitList habits={monthHabits} date={today} />
-                        </TabsContent>
-
-                        <TabsContent value="all">
-                            <HabitList habits={habits} date={today} />
-                        </TabsContent>
                     </Tabs>
+                    <HabitList habits={getHabitsForView()} date={today} />
                 </div>
 
                 {/* Sidebar - Mood Tracker */}

@@ -3,7 +3,8 @@ import { useHabits } from "@/context/HabitContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smile, Frown, Meh, Zap, Brain } from "lucide-react";
+import { Smile, Frown, Meh, Zap, Brain, History } from "lucide-react";
+import { MoodHistory } from "./MoodHistory";
 
 const MOODS = [
     { value: 1, icon: Frown, label: "Bad", color: "text-red-500" },
@@ -22,6 +23,7 @@ export function MoodTracker() {
     const [energy, setEnergy] = useState(log?.energy || 50);
     const [stress, setStress] = useState(log?.stress || 50);
     const [saved, setSaved] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
 
     const handleSave = () => {
         logDailyStats(today, { mood, energy, stress });
@@ -30,73 +32,90 @@ export function MoodTracker() {
     };
 
     return (
-        <Card className="border-none shadow-md bg-card/60 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-primary" />
-                    How are you feeling today?
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                {/* Mood Selection */}
-                <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Mood</p>
-                    <div className="flex justify-between gap-2">
-                        {MOODS.map((m) => {
-                            const Icon = m.icon;
-                            return (
-                                <button
-                                    key={m.value}
-                                    onClick={() => setMood(m.value)}
-                                    className={`flex-1 flex flex-col items-center py-3 rounded-xl border-2 transition-all ${mood === m.value
+        <div className="space-y-0">
+            <Card className="border-none shadow-md bg-card/60 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Brain className="h-5 w-5 text-primary" />
+                            How are you feeling today?
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground"
+                            onClick={() => setShowHistory(!showHistory)}
+                        >
+                            <History className="h-3 w-3" />
+                            {showHistory ? "Hide" : "View"} History
+                        </Button>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {/* Mood Selection */}
+                    <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Mood</p>
+                        <div className="flex justify-between gap-2">
+                            {MOODS.map((m) => {
+                                const Icon = m.icon;
+                                return (
+                                    <button
+                                        key={m.value}
+                                        onClick={() => setMood(m.value)}
+                                        className={`flex-1 flex flex-col items-center py-3 rounded-xl border-2 transition-all ${mood === m.value
                                             ? "border-primary bg-primary/10"
                                             : "border-transparent bg-muted/50 hover:bg-muted"
-                                        }`}
-                                >
-                                    <Icon className={`h-6 w-6 ${mood === m.value ? m.color : "text-muted-foreground"}`} />
-                                    <span className="text-xs mt-1">{m.label}</span>
-                                </button>
-                            );
-                        })}
+                                            }`}
+                                    >
+                                        <Icon className={`h-6 w-6 ${mood === m.value ? m.color : "text-muted-foreground"}`} />
+                                        <span className="text-xs mt-1">{m.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
 
-                {/* Energy Slider */}
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Zap className="h-4 w-4" /> Energy
-                        </p>
-                        <span className="text-sm font-medium">{energy}%</span>
+                    {/* Energy Slider */}
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                <Zap className="h-4 w-4" /> Energy
+                            </p>
+                            <span className="text-sm font-medium">{energy}%</span>
+                        </div>
+                        <Slider
+                            value={[energy]}
+                            onValueChange={(v) => setEnergy(v[0])}
+                            max={100}
+                            step={5}
+                            className="[&>span:first-child]:bg-yellow-500"
+                        />
                     </div>
-                    <Slider
-                        value={[energy]}
-                        onValueChange={(v) => setEnergy(v[0])}
-                        max={100}
-                        step={5}
-                        className="[&>span:first-child]:bg-yellow-500"
-                    />
-                </div>
 
-                {/* Stress Slider */}
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                        <p className="text-sm text-muted-foreground">😵‍💫 Stress</p>
-                        <span className="text-sm font-medium">{stress}%</span>
+                    {/* Stress Slider */}
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground">😵‍💫 Stress</p>
+                            <span className="text-sm font-medium">{stress}%</span>
+                        </div>
+                        <Slider
+                            value={[stress]}
+                            onValueChange={(v) => setStress(v[0])}
+                            max={100}
+                            step={5}
+                            className="[&>span:first-child]:bg-red-500"
+                        />
                     </div>
-                    <Slider
-                        value={[stress]}
-                        onValueChange={(v) => setStress(v[0])}
-                        max={100}
-                        step={5}
-                        className="[&>span:first-child]:bg-red-500"
-                    />
-                </div>
 
-                <Button onClick={handleSave} className="w-full" variant={saved ? "secondary" : "default"}>
-                    {saved ? "✓ Saved!" : "Log Today's Stats"}
-                </Button>
-            </CardContent>
-        </Card>
+                    <Button onClick={handleSave} className="w-full" variant={saved ? "secondary" : "default"}>
+                        {saved ? "✓ Saved!" : "Log Today's Stats"}
+                    </Button>
+                </CardContent>
+            </Card>
+
+            {/* Mood History */}
+            <MoodHistory isOpen={showHistory} onClose={() => setShowHistory(false)} />
+        </div>
     );
 }
+
