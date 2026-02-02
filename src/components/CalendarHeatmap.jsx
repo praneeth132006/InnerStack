@@ -45,141 +45,192 @@ function groupByWeek(dates) {
     return weeks;
 }
 
-export function CalendarHeatmap() {
-    const { getAllCompletionDates } = useHabits();
-    const completions = getAllCompletionDates();
-    const currentYear = new Date().getFullYear();
-    const [selectedYear, setSelectedYear] = useState(currentYear);
+export function CalendarHeatmap({ specificHabitId = null }) {
+    const { habits, getHabitHistory } = useHabit();
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-    const yearDates = useMemo(() => generateYearData(selectedYear), [selectedYear]);
-    const weeks = useMemo(() => groupByWeek(yearDates), [yearDates]);
+    // Calculate completion data
+    const data = useMemo(() => {
+        const counts = new Map();
+        let maxCount = 0;
+        let totalActiveDays = 0;
+        let currentStreak = 0;
+        let longestStreak = 0;
 
-    const maxCount = Math.max(1, ...Object.values(completions));
+        // Helper to check if a specific habit is completed on a date
+        const checkHabitCompletion = (habit, dateStr) => {
+            if (!habit.completedDates) return false;
+            return habit.completedDates.includes(dateStr);
+        };
 
-    // Calculate month labels
-    const monthLabels = useMemo(() => {
-        const labels = [];
-        let lastMonth = -1;
-        weeks.forEach((week, weekIndex) => {
-            const firstDay = new Date(week[0]);
-            const month = firstDay.getMonth();
-            if (month !== lastMonth && firstDay.getFullYear() === selectedYear) {
-                labels.push({ weekIndex, month });
-                lastMonth = month;
+        const today = new Date();
+        const start = startOfYear(new Date(selectedYear, 0, 1));
+        const end = endOfYear(new Date(selectedYear, 0, 1));
+        const days = eachDayOfInterval({ start, end });
+
+        days.forEach(day => {
+            const dateStr = format(day, "yyyy-MM-dd");
+            let count = 0;
+
+            if (specificHabitId) {
+                // Single habit mode
+                const habit = habits.find(h => h.id === specificHabitId);
+                if (habit && checkHabitCompletion(habit, dateStr)) {
+                    count = 1;
+                }
+                // For single habit, max is always 1
+                maxCount = 1;
+            } else {
+                // Aggregate mode
+                habits.forEach(habit => {
+                    if (checkHabitCompletion(habit, dateStr)) {
+                        count++;
+                    }
+                });
+                if (count > maxCount) maxCount = count;
             }
-        });
-        return labels;
-    }, [weeks, selectedYear]);
 
-    // Calculate stats for the year
-    const yearStats = useMemo(() => {
-        let totalCompletions = 0;
-        let activeDays = 0;
-        yearDates.forEach(date => {
-            const count = completions[date] || 0;
             if (count > 0) {
-                totalCompletions += count;
-                activeDays++;
+                counts.set(dateStr, count);
+                if (isBefore(day, today) || isSameDay(day, today)) {
+                    totalActiveDays++;
+                }
             }
         });
-        return { totalCompletions, activeDays };
-    }, [yearDates, completions]);
+
+        return { counts, maxCount, totalActiveDays };
+    }, [habits, selectedYear, specificHabitId]);
+
+    const months = useMemo(() => {
+        const start = startOfYear(new Date(selectedYear, 0, 1));
+        return Array.from({ length: 12 }, (_, i) => {
+            const date = new Date(selectedYear, i, 1);
+            return {
+                name: format(date, "MMM"),
+                days: eachDayOfInterval({
+                    start: date,
+                    end: new Date(selectedYear, i + 1, 0)
+                })
+            };
+        });
+    }, [selectedYear]);
+
+    function getIntensityClass(count, max) {
+        if (!count || count === 0) return "bg-white/5"; // Empty state for black theme
+
+        // If specific habit, it's binary
+        if (specificHabitId) {
+            return "bg-emerald-500";
+        }
+
+        const ratio = count / max;
+        if (ratio <= 0.25) return "bg-emerald-500/20";
+        if (ratio <= 0.50) return "bg-emerald-500/40";
+        if (ratio <= 0.75) return "bg-emerald-500/70";
+        return "bg-emerald-500"; // Solid for high completion
+    }
 
     return (
-        <div className="w-full">
-            {/* Header with stats on left, year selector on right */}
-            <div className="flex items-start justify-between mb-4">
-                {/* Stats on the left */}
-                <div className="flex gap-4 text-sm text-muted-foreground">
-                    <span><strong className="text-foreground">{yearStats.totalCompletions}</strong> completions</span>
-                    <span><strong className="text-foreground">{yearStats.activeDays}</strong> active days</span>
-                </div>
-            </div>
-
-            <div className="flex gap-4">
-                {/* Heatmap grid */}
-                <div className="flex-1 overflow-x-auto pb-2">
-                    <div className="min-w-[700px]">
-                        {/* Month labels */}
-                        <div className="flex ml-8 mb-1 text-xs text-muted-foreground">
-                            {weeks.map((_, weekIndex) => {
-                                const label = monthLabels.find((l) => l.weekIndex === weekIndex);
-                                return (
-                                    <div key={weekIndex} className="w-3 mr-[2px] text-center">
-                                        {label ? MONTHS[label.month] : ""}
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        <div className="flex">
-                            {/* Day labels */}
-                            <div className="flex flex-col mr-2 text-xs text-muted-foreground justify-around h-[84px]">
-                                {DAYS.map((day, i) => (
-                                    <span key={i} className="h-3 leading-3">{day}</span>
-                                ))}
-                            </div>
-
-                            {/* Grid */}
-                            <div className="flex gap-[2px]">
-                                {weeks.map((week, weekIndex) => (
-                                    <div key={weekIndex} className="flex flex-col gap-[2px]">
-                                        {week.map((date) => {
-                                            const count = completions[date] || 0;
-                                            const dateObj = new Date(date);
-                                            const isCurrentYear = dateObj.getFullYear() === selectedYear;
-                                            const isFuture = dateObj > new Date();
-                                            return (
-                                                <div
-                                                    key={date}
-                                                    title={isCurrentYear ? `${date}: ${count} habit${count !== 1 ? "s" : ""} completed` : ""}
-                                                    className={`w-3 h-3 rounded-sm transition-colors ${!isCurrentYear || isFuture
-                                                        ? "opacity-0"
-                                                        : `${getIntensityClass(count, maxCount)} hover:ring-2 hover:ring-primary/50`
-                                                        }`}
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Legend */}
-                        <div className="flex items-center justify-end gap-1 mt-3 text-xs text-muted-foreground">
-                            <span>Less</span>
-                            <div className="w-3 h-3 rounded-sm bg-muted/50" />
-                            <div className="w-3 h-3 rounded-sm bg-emerald-500/30" />
-                            <div className="w-3 h-3 rounded-sm bg-emerald-500/50" />
-                            <div className="w-3 h-3 rounded-sm bg-emerald-500/70" />
-                            <div className="w-3 h-3 rounded-sm bg-emerald-500" />
-                            <span>More</span>
-                        </div>
+        <div className="w-full space-y-6">
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-4">
+                    <h3 className="text-lg font-semibold text-white">
+                        {specificHabitId ? "Habit Level Consistency" : "Yearly Activity"}
+                    </h3>
+                    <div className="flex items-center bg-white/5 rounded-lg border border-white/5 p-1 text-sm">
+                        <button
+                            onClick={() => setSelectedYear(y => y - 1)}
+                            className="p-1 hover:bg-white/10 rounded-md transition-colors text-slate-400 hover:text-white"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <span className="px-3 font-medium text-slate-200">{selectedYear}</span>
+                        <button
+                            onClick={() => setSelectedYear(y => y + 1)}
+                            className="p-1 hover:bg-white/10 rounded-md transition-colors text-slate-400 hover:text-white"
+                            disabled={selectedYear >= new Date().getFullYear()}
+                        >
+                            <ChevronRight className={`h-4 w-4 ${selectedYear >= new Date().getFullYear() ? 'opacity-30' : ''}`} />
+                        </button>
                     </div>
                 </div>
 
-                {/* Year Selector - Vertical layout on the right */}
-                <div className="flex flex-col items-center justify-center gap-1 min-w-[60px]">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full hover:bg-muted"
-                        onClick={() => setSelectedYear(y => y + 1)}
-                        disabled={selectedYear >= currentYear}
-                    >
-                        <ChevronUp className="h-5 w-5" />
-                    </Button>
-                    <span className="text-lg font-bold py-1">{selectedYear}</span>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full hover:bg-muted"
-                        onClick={() => setSelectedYear(y => y - 1)}
-                        disabled={selectedYear <= 2020}
-                    >
-                        <ChevronDown className="h-5 w-5" />
-                    </Button>
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span>Less</span>
+                    <div className="w-3 h-3 bg-white/5 rounded-sm" />
+                    <div className="w-3 h-3 bg-emerald-500/20 rounded-sm" />
+                    <div className="w-3 h-3 bg-emerald-500/40 rounded-sm" />
+                    <div className="w-3 h-3 bg-emerald-500/70 rounded-sm" />
+                    <div className="w-3 h-3 bg-emerald-500 rounded-sm" />
+                    <span>More</span>
                 </div>
+            </div>
+
+            <div className="relative">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <AnimatePresence mode="popLayout">
+                        {months.map((month, i) => (
+                            <motion.div
+                                key={`${selectedYear}-${month.name}`}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: i * 0.05 }}
+                                className="bg-white/5 rounded-xl p-4 border border-white/5"
+                            >
+                                <div className="text-sm font-medium text-slate-400 mb-3">{month.name}</div>
+                                <div className="grid grid-cols-7 gap-1">
+                                    {["S", "M", "T", "W", "T", "F", "S"].map(d => (
+                                        <div key={d} className="text-[10px] text-slate-600 text-center">{d}</div>
+                                    ))}
+                                    {/* Offset for first day using grid column start */}
+                                    {Array.from({ length: getDay(month.days[0]) }).map((_, i) => (
+                                        <div key={`offset-${i}`} />
+                                    ))}
+                                    {month.days.map(day => {
+                                        const dateStr = format(day, "yyyy-MM-dd");
+                                        const count = data.counts.get(dateStr) || 0;
+                                        const intensity = getIntensityClass(count, data.maxCount);
+
+                                        return (
+                                            <TooltipProvider key={dateStr}>
+                                                <Tooltip delayDuration={0}>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            className={`aspect-square rounded-sm ${intensity} transition-colors hover:ring-2 hover:ring-emerald-500/50 hover:ring-offset-1 hover:ring-offset-black cursor-pointer`}
+                                                        />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="bg-slate-900 border-white/10 text-white text-xs">
+                                                        <p className="font-medium">{format(day, "MMM d, yyyy")}</p>
+                                                        <p className="text-emerald-400">
+                                                            {specificHabitId
+                                                                ? (count > 0 ? "Completed" : "Missed")
+                                                                : `${count} habit${count !== 1 ? 's' : ''} completed`
+                                                            }
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        );
+                                    })}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+            </div>
+
+            {/* Yearly Stats Summary */}
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
+                {[
+                    { label: "Total Active Days", value: data.totalActiveDays },
+                    { label: "Total Completions", value: Array.from(data.counts.values()).reduce((a, b) => a + b, 0) },
+                    { label: "Completion Rate", value: Math.round((data.totalActiveDays / 365) * 100) + "%" }
+                ].map(stat => (
+                    <div key={stat.label} className="text-center">
+                        <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wider">{stat.label}</div>
+                    </div>
+                ))}
             </div>
         </div>
     );

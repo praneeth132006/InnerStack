@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Users, Star, GitFork, Heart, ExternalLink, ArrowRight, ChevronLeft, ChevronRight, Twitter, Linkedin, Github } from "lucide-react";
+import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Heart, ExternalLink, ArrowRight, ChevronLeft, ChevronRight, Twitter, Linkedin, Github, Star, GitFork } from "lucide-react";
 
 const FEATURES = [
     {
@@ -105,16 +105,16 @@ const TESTIMONIALS = [
 
 export function Hero({ onNavigate }) {
     return (
-        <>
+        <div className="bg-black text-white selection:bg-primary/30">
             {/* Hero Section */}
-            <section className="relative overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24">
+            <section className="relative overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32">
                 <div className="container mx-auto px-4 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl mb-6">
+                        <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl md:text-8xl mb-8">
                             Build Habits That <span className="text-primary">Stick</span>.
                         </h1>
                     </motion.div>
@@ -123,7 +123,7 @@ export function Hero({ onNavigate }) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                     >
-                        <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-8">
+                        <p className="mx-auto max-w-2xl text-xl text-slate-400 mb-10 leading-relaxed">
                             InnerStack helps you track, analyze, and optimize your daily routines with a beautiful, distraction-free interface.
                         </p>
                     </motion.div>
@@ -131,36 +131,34 @@ export function Hero({ onNavigate }) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
-                        className="flex justify-center gap-4"
+                        className="flex justify-center gap-5"
                     >
-                        <Button size="lg" className="h-12 px-8 text-lg" onClick={() => onNavigate("auth")}>
+                        <Button size="lg" className="h-14 px-10 text-lg rounded-full" onClick={() => onNavigate("auth")}>
                             Start for Free
                         </Button>
-                        <Button size="lg" variant="outline" className="h-12 px-8 text-lg" onClick={() => onNavigate("auth")}>
+                        <Button size="lg" variant="outline" className="h-14 px-10 text-lg rounded-full border-slate-800 hover:bg-slate-900 text-white" onClick={() => onNavigate("auth")}>
                             Sign In
                         </Button>
                     </motion.div>
                 </div>
-
-                <div className="absolute top-1/2 left-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] opacity-50 pointer-events-none" />
             </section>
 
             {/* Features Section */}
-            <section id="features" className="py-20 bg-muted/30">
+            <section id="features" className="py-24">
                 <div className="container mx-auto px-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-center mb-12"
+                        className="text-center mb-16"
                     >
-                        <h2 className="text-3xl font-bold mb-4">Everything You Need</h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                        <h2 className="text-4xl font-bold mb-4">Everything You Need</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-lg">
                             Powerful features designed to help you build lasting habits and achieve your goals.
                         </p>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {FEATURES.map((feature, i) => (
                             <motion.div
                                 key={feature.title}
@@ -169,13 +167,13 @@ export function Hero({ onNavigate }) {
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
                             >
-                                <Card className="h-full border-none shadow-sm hover:shadow-md transition-shadow">
+                                <Card className="h-full bg-white/5 border-none shadow-none hover:bg-white/10 transition-colors">
                                     <CardHeader>
-                                        <feature.icon className="h-10 w-10 text-primary mb-2" />
-                                        <CardTitle>{feature.title}</CardTitle>
+                                        <feature.icon className="h-10 w-10 text-primary mb-4" />
+                                        <CardTitle className="text-xl text-white">{feature.title}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <CardDescription className="text-base">{feature.description}</CardDescription>
+                                        <CardDescription className="text-base text-slate-400">{feature.description}</CardDescription>
                                     </CardContent>
                                 </Card>
                             </motion.div>
@@ -185,21 +183,21 @@ export function Hero({ onNavigate }) {
             </section>
 
             {/* Pricing Section */}
-            <section id="pricing" className="py-20">
+            <section id="pricing" className="py-24">
                 <div className="container mx-auto px-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-center mb-12"
+                        className="text-center mb-16"
                     >
-                        <h2 className="text-3xl font-bold mb-4">Simple, Transparent Pricing</h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                        <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-lg">
                             Start free. Upgrade when you're ready.
                         </p>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                         {PRICING.map((plan, i) => (
                             <motion.div
                                 key={plan.name}
@@ -208,34 +206,32 @@ export function Hero({ onNavigate }) {
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
                             >
-                                <Card className={`h-full relative ${plan.popular ? "border-primary shadow-lg scale-105" : "border-none shadow-sm"}`}>
+                                <Card className={`h-full relative bg-white/5 border-none shadow-none ${plan.popular ? "ring-2 ring-primary bg-white/10" : ""}`}>
                                     {plan.popular && (
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
                                             Most Popular
                                         </div>
                                     )}
                                     <CardHeader className="text-center">
-                                        <CardTitle className="text-xl">{plan.name}</CardTitle>
-                                        <div className="mt-4">
-                                            <span className="text-4xl font-bold">{plan.price}</span>
-                                            {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
+                                        <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
+                                        <div className="mt-4 mb-2">
+                                            <span className="text-5xl font-bold text-white">{plan.price}</span>
+                                            {plan.period && <span className="text-slate-400">{plan.period}</span>}
                                         </div>
-                                        <CardDescription>{plan.description}</CardDescription>
+                                        <CardDescription className="text-slate-400">{plan.description}</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <ul className="space-y-2">
+                                    <CardContent className="space-y-6">
+                                        <ul className="space-y-3">
                                             {plan.features.map((feature) => (
-                                                <li key={feature} className="flex items-center gap-2 text-sm">
-                                                    <Check className="h-4 w-4 text-primary shrink-0" />
+                                                <li key={feature} className="flex items-center gap-3 text-sm text-slate-300">
+                                                    <Check className="h-5 w-5 text-primary shrink-0" />
                                                     {feature}
                                                 </li>
                                             ))}
                                         </ul>
-                                        <AuthDialog>
-                                            <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
-                                                {plan.cta}
-                                            </Button>
-                                        </AuthDialog>
+                                        <Button className={`w-full h-12 rounded-full text-base ${plan.popular ? "" : "bg-white/10 hover:bg-white/20 text-white border-none"}`} variant={plan.popular ? "default" : "outline"} onClick={() => onNavigate("auth")}>
+                                            {plan.cta}
+                                        </Button>
                                     </CardContent>
                                 </Card>
                             </motion.div>
@@ -245,21 +241,21 @@ export function Hero({ onNavigate }) {
             </section>
 
             {/* Testimonials Section */}
-            <section className="py-20 bg-muted/30">
+            <section className="py-24">
                 <div className="container mx-auto px-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-center mb-12"
+                        className="text-center mb-16"
                     >
-                        <h2 className="text-3xl font-bold mb-4">Loved by Thousands</h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                        <h2 className="text-4xl font-bold mb-4">Loved by Thousands</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-lg">
                             Join the community of people building better habits every day.
                         </p>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                         {TESTIMONIALS.map((testimonial, i) => (
                             <motion.div
                                 key={testimonial.name}
@@ -268,21 +264,21 @@ export function Hero({ onNavigate }) {
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
                             >
-                                <Card className="h-full border-none shadow-sm">
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center gap-1 mb-4">
+                                <Card className="h-full bg-white/5 border-none shadow-none hover:bg-white/10 transition-colors">
+                                    <CardContent className="pt-8">
+                                        <div className="flex items-center gap-1 mb-6">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                                             ))}
                                         </div>
-                                        <p className="text-muted-foreground mb-4">"{testimonial.content}"</p>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold">
+                                        <p className="text-slate-300 mb-6 text-lg">"{testimonial.content}"</p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary">
                                                 {testimonial.avatar}
                                             </div>
                                             <div>
-                                                <p className="font-medium">{testimonial.name}</p>
-                                                <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                                                <p className="font-semibold text-white">{testimonial.name}</p>
+                                                <p className="text-sm text-slate-400">{testimonial.role}</p>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -294,29 +290,29 @@ export function Hero({ onNavigate }) {
             </section>
 
             {/* Dashboard Preview CTA Section */}
-            <section className="py-20 bg-card text-card-foreground overflow-hidden border-y">
+            <section className="py-24 overflow-hidden">
                 <div className="container mx-auto px-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="grid lg:grid-cols-2 gap-12 items-center"
+                        className="grid lg:grid-cols-2 gap-16 items-center"
                     >
-                        {/* Dashboard Preview Cards */}
+                        {/* Dashboard Preview Cards - Glassmorphism optimized for black */}
                         <div className="relative h-[400px]">
                             {/* Ratings Card */}
                             <motion.div
                                 initial={{ x: -20, y: 0 }}
                                 whileInView={{ x: 0, y: 0 }}
                                 viewport={{ once: true }}
-                                className="absolute top-0 left-0 bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-48"
+                                className="absolute top-0 left-0 bg-slate-900/90 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-white/5 w-52"
                             >
                                 <div className="text-xs text-slate-400 mb-1">Ratings</div>
                                 <div className="flex items-center gap-2 text-[10px] text-emerald-400 mb-2">
-                                    <span className="bg-emerald-500/20 px-2 py-0.5 rounded">Last 6 months</span>
+                                    <span className="bg-emerald-500/10 px-2 py-0.5 rounded">Last 6 months</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-2xl font-bold">8.14k</span>
+                                    <span className="text-2xl font-bold text-white">8.14k</span>
                                     <span className="text-emerald-400 text-xs">+18.2%</span>
                                 </div>
                             </motion.div>
@@ -327,25 +323,25 @@ export function Hero({ onNavigate }) {
                                 whileInView={{ x: 0, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: 0.1 }}
-                                className="absolute top-16 left-32 bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-56"
+                                className="absolute top-16 left-32 bg-slate-900/90 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-white/5 w-60"
                             >
-                                <div className="flex items-center justify-between mb-3">
-                                    <ChevronLeft className="h-4 w-4 text-slate-400" />
-                                    <span className="text-sm font-medium">January 2026</span>
-                                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                                <div className="flex items-center justify-between mb-4">
+                                    <ChevronLeft className="h-4 w-4 text-slate-500" />
+                                    <span className="text-sm font-medium text-white">January 2026</span>
+                                    <ChevronRight className="h-4 w-4 text-slate-500" />
                                 </div>
                                 <div className="grid grid-cols-7 gap-1 text-[10px] text-center mb-2">
                                     {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
-                                        <div key={d} className="text-slate-500">{d}</div>
+                                        <div key={d} className="text-slate-600">{d}</div>
                                     ))}
                                 </div>
                                 <div className="grid grid-cols-7 gap-1 text-xs text-center">
                                     {[...Array(31)].map((_, i) => (
                                         <div
                                             key={i}
-                                            className={`w-6 h-6 flex items-center justify-center rounded-full ${i === 12 ? "bg-emerald-500 text-white" :
-                                                i === 10 ? "ring-2 ring-emerald-500" :
-                                                    "hover:bg-slate-700"
+                                            className={`w-6 h-6 flex items-center justify-center rounded-full ${i === 12 ? "bg-primary text-white" :
+                                                i === 10 ? "ring-1 ring-primary text-primary" :
+                                                    "text-slate-400 hover:bg-white/5"
                                                 }`}
                                         >
                                             {i + 1}
@@ -360,12 +356,12 @@ export function Hero({ onNavigate }) {
                                 whileInView={{ x: 0, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: 0.2 }}
-                                className="absolute top-4 left-[260px] bg-slate-800/90 backdrop-blur rounded-2xl p-4 shadow-2xl border border-slate-700 w-52 z-10"
+                                className="absolute top-4 left-[280px] bg-slate-900/90 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-white/5 w-56 z-10"
                             >
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-sm font-medium">Habit Status</span>
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-sm font-medium text-white">Habit Status</span>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {[
                                         { label: "Excellent", pct: "55%", color: "bg-emerald-500", change: "+25%" },
                                         { label: "Good", pct: "20%", color: "bg-blue-500", change: "+30%" },
@@ -387,7 +383,7 @@ export function Hero({ onNavigate }) {
 
                         {/* CTA Text */}
                         <div className="text-center lg:text-left">
-                            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+                            <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-white">
                                 Let's skip the chatter and start building!
                             </h2>
                             <p className="text-slate-400 text-lg mb-8 max-w-lg">
@@ -395,117 +391,35 @@ export function Hero({ onNavigate }) {
                             </p>
                             <Button
                                 size="lg"
-                                variant="secondary"
-                                className="h-12 px-8 text-lg gap-2 bg-white text-slate-900 hover:bg-slate-100"
+                                className="h-14 px-10 text-lg gap-2 rounded-full bg-white text-black hover:bg-slate-200"
                                 onClick={() => onNavigate("auth")}
                             >
-                                Let's Started <ArrowRight className="h-5 w-5" />
+                                Let's Get Started <ArrowRight className="h-5 w-5" />
                             </Button>
                         </div>
                     </motion.div>
                 </div>
             </section>
 
-            {/* Open Source Section */}
-            <section id="open-source" className="py-20 bg-muted/30">
-                <div className="container mx-auto px-4 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                            <Heart className="h-4 w-4" />
-                            Open Source
-                        </div>
-                        <h2 className="text-3xl font-bold mb-4">Built in the Open</h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-                            InnerStack is open source. Explore the code, contribute features, or fork it to make it your own.
-                        </p>
-
-                        <div className="flex flex-wrap justify-center gap-4 mb-8">
-                            <a
-                                href="https://github.com/praneeth132006/InnerStack"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Button size="lg" className="gap-2">
-                                    <Star className="h-5 w-5" />
-                                    Star on GitHub
-                                </Button>
-                            </a>
-                            <a
-                                href="https://github.com/praneeth132006/InnerStack/fork"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Button size="lg" variant="outline" className="gap-2">
-                                    <GitFork className="h-5 w-5" />
-                                    Fork Repository
-                                </Button>
-                            </a>
-                            <a
-                                href="https://github.com/praneeth132006/InnerStack/blob/main/CONTRIBUTING.md"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Button size="lg" variant="outline" className="gap-2">
-                                    <ExternalLink className="h-5 w-5" />
-                                    Contribute
-                                </Button>
-                            </a>
-                        </div>
-
-                        <div className="flex justify-center gap-8 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                                JavaScript
-                            </div>
-                            <div>MIT License</div>
-                            <div>Built with React + Vite</div>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* CTA Section */}
-            <section className="py-20">
-                <div className="container mx-auto px-4 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Habits?</h2>
-                        <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-                            Join thousands of users who are already building better habits with InnerStack.
-                        </p>
-                        <AuthDialog defaultTab="signup">
-                            <Button size="lg" className="h-12 px-8 text-lg">Get Started Free</Button>
-                        </AuthDialog>
-                    </motion.div>
-                </div>
-            </section>
-
             {/* Footer */}
-            <footer className="bg-black text-slate-400 py-20 border-t border-slate-800">
+            <footer className="bg-black text-slate-400 py-20">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
                         {/* Brand Column */}
                         <div className="col-span-2 lg:col-span-2 space-y-6">
                             <h3 className="text-2xl font-bold text-white tracking-tight">InnerStack</h3>
-                            <p className="text-sm leading-relaxed max-w-sm">
+                            <p className="text-sm leading-relaxed max-w-sm text-slate-500">
                                 Empowering your personal growth through data-driven habit tracking.
                                 Open source, privacy-first, and designed for humans.
                             </p>
                             <div className="flex gap-4">
-                                <a href="#" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 hover:text-white transition">
+                                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 hover:text-white transition">
                                     <Twitter className="h-4 w-4" />
                                 </a>
-                                <a href="#" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 hover:text-white transition">
+                                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 hover:text-white transition">
                                     <Github className="h-4 w-4" />
                                 </a>
-                                <a href="#" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 hover:text-white transition">
+                                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 hover:text-white transition">
                                     <Linkedin className="h-4 w-4" />
                                 </a>
                             </div>
@@ -514,7 +428,7 @@ export function Hero({ onNavigate }) {
                         {/* Links */}
                         <div className="space-y-4">
                             <h4 className="text-white font-medium">Product</h4>
-                            <ul className="space-y-2 text-sm">
+                            <ul className="space-y-2 text-sm text-slate-500">
                                 <li><a href="#" className="hover:text-white transition">Features</a></li>
                                 <li><a href="#" className="hover:text-white transition">Pricing</a></li>
                                 <li><a href="#" className="hover:text-white transition">Changelog</a></li>
@@ -524,7 +438,7 @@ export function Hero({ onNavigate }) {
 
                         <div className="space-y-4">
                             <h4 className="text-white font-medium">Community</h4>
-                            <ul className="space-y-2 text-sm">
+                            <ul className="space-y-2 text-sm text-slate-500">
                                 <li><a href="#" className="hover:text-white transition">Discord</a></li>
                                 <li><a href="#" className="hover:text-white transition">GitHub</a></li>
                                 <li><a href="#" className="hover:text-white transition">Twitter</a></li>
@@ -534,7 +448,7 @@ export function Hero({ onNavigate }) {
 
                         <div className="space-y-4">
                             <h4 className="text-white font-medium">Legal</h4>
-                            <ul className="space-y-2 text-sm">
+                            <ul className="space-y-2 text-sm text-slate-500">
                                 <li><a href="#" className="hover:text-white transition">Privacy</a></li>
                                 <li><a href="#" className="hover:text-white transition">Terms</a></li>
                                 <li><a href="#" className="hover:text-white transition">Security</a></li>
@@ -542,14 +456,14 @@ export function Hero({ onNavigate }) {
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+                    <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-600">
                         <p>© 2026 InnerStack. All rights reserved.</p>
                         <p className="flex items-center gap-1">
-                            Crafted with <Heart className="h-3 w-3 text-red-500 fill-red-500" /> by Praneeth
+                            Crafted with <Heart className="h-3 w-3 text-red-900 fill-red-900" /> by Praneeth
                         </p>
                     </div>
                 </div>
             </footer>
-        </>
+        </div>
     );
 }
