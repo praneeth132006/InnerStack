@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Check, X, Flame } from "lucide-react";
+import { formatDateLocal } from "@/lib/utils";
 
 function formatDate(dateStr) {
     const date = new Date(dateStr);
@@ -18,7 +19,7 @@ export function HabitHistory({ habit, isOpen }) {
         for (let i = 0; i < 30; i++) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split("T")[0];
+            const dateStr = formatDateLocal(date);
             entries.push({
                 date: dateStr,
                 completed: habit.history[dateStr] || false,
@@ -34,7 +35,7 @@ export function HabitHistory({ habit, isOpen }) {
         let date = new Date();
 
         for (let i = 0; i < 365; i++) {
-            const dateStr = date.toISOString().split("T")[0];
+            const dateStr = formatDateLocal(date);
             if (habit.history?.[dateStr]) {
                 streak++;
                 date.setDate(date.getDate() - 1);

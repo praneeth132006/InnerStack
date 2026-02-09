@@ -1,7 +1,6 @@
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "./ui/button"
 import { LayoutDashboard, User, LogOut, Settings } from "lucide-react"
-import { AuthDialog } from "./AuthDialog"
 import {
     DropdownMenu,
     DropdownMenuContent,

@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Smile, Frown, Meh, Zap, Brain, History } from "lucide-react";
 import { MoodHistory } from "./MoodHistory";
+import { formatDateLocal } from "@/lib/utils";
 
 const MOODS = [
     { value: 1, icon: Frown, label: "Bad", color: "text-red-500" },
@@ -16,7 +17,7 @@ const MOODS = [
 
 export function MoodTracker() {
     const { getDailyLog, logDailyStats } = useHabits();
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatDateLocal();
     const log = getDailyLog(today);
 
     const [mood, setMood] = useState(log?.mood || 3);

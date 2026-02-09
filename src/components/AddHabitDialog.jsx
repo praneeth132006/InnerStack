@@ -64,7 +64,7 @@ export function AddHabitDialog() {
             frequency,
             customDays,
             targetCount,
-            targetDate: targetDate ? targetDate.toISOString().split("T")[0] : null,
+            targetDate: targetDate ? formatDateLocal(targetDate) : null,
             category,
         });
         resetForm();

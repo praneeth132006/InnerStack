@@ -9,10 +9,11 @@ import {
     subscribeToDailyLogs,
     saveDailyLog,
 } from "@/lib/databaseService";
+import { formatDateLocal } from "@/lib/utils";
 
 const HabitContext = createContext(null);
 
-const getToday = () => new Date().toISOString().split("T")[0];
+const getToday = () => formatDateLocal();
 
 const getDayOfWeek = (dateStr) => {
     const d = new Date(dateStr);
@@ -61,10 +62,16 @@ export function HabitProvider({ children }) {
             };
         } else {
             // Offline mode - use localStorage
-            const savedHabits = localStorage.getItem(`innerstack-habits-${user.uid}`);
-            const savedLogs = localStorage.getItem(`innerstack-logs-${user.uid}`);
-            setHabits(savedHabits ? JSON.parse(savedHabits) : []);
-            setDailyLogs(savedLogs ? JSON.parse(savedLogs) : {});
+            try {
+                const savedHabits = localStorage.getItem(`innerstack-habits-${user.uid}`);
+                const savedLogs = localStorage.getItem(`innerstack-logs-${user.uid}`);
+                setHabits(savedHabits ? JSON.parse(savedHabits) : []);
+                setDailyLogs(savedLogs ? JSON.parse(savedLogs) : {});
+            } catch (err) {
+                console.error("Error loading offline data:", err);
+                setHabits([]);
+                setDailyLogs({});
+            }
             setLoading(false);
         }
     }, [user, firebaseEnabled]);
@@ -160,7 +167,7 @@ export function HabitProvider({ children }) {
         let date = new Date();
 
         for (let i = 0; i < 365; i++) {
-            const dateStr = date.toISOString().split("T")[0];
+            const dateStr = formatDateLocal(date);
             if (!isHabitDueOnDate(habit, dateStr)) {
                 date.setDate(date.getDate() - 1);
                 continue;

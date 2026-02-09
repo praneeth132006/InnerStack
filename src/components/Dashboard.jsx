@@ -7,9 +7,10 @@ import { CalendarHeatmap } from "./CalendarHeatmap";
 import { DashboardStats } from "./DashboardStats";
 import { HabitMatrix } from "./HabitMatrix"; // Replaces MonthCalendar and List view for history
 import { Calendar, LayoutGrid, List } from "lucide-react";
+import { formatDateLocal } from "@/lib/utils";
 
 function getToday() {
-    return new Date().toISOString().split("T")[0];
+    return formatDateLocal();
 }
 
 const VIEW_OPTIONS = [

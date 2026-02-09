@@ -9,6 +9,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Target, Flame, Calendar, Moon, Sun, Mail, Phone, MapPin, Send, HelpCircle, FileText, Settings, LogOut, LayoutDashboard, Share2 } from "lucide-react";
 import { useHabits } from "@/context/HabitContext";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export function ProfilePage({ user, onLogout }) {
     const { habits, getAllCompletionDates } = useHabits();
@@ -217,9 +224,16 @@ export function ProfilePage({ user, onLogout }) {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Subject</Label>
-                                        <Select>
-                                            {/* Select placeholder if component available, else standard Input */}
-                                            <Input placeholder="General Inquiry" />
+                                        <Select defaultValue="general">
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select a subject" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="general">General Inquiry</SelectItem>
+                                                <SelectItem value="bug">Bug Report</SelectItem>
+                                                <SelectItem value="feature">Feature Request</SelectItem>
+                                                <SelectItem value="billing">Billing Issue</SelectItem>
+                                            </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
@@ -237,7 +251,3 @@ export function ProfilePage({ user, onLogout }) {
     );
 }
 
-// Helper component for Select if needed or just use standard input
-function Select({ children }) {
-    return <>{children}</>;
-}

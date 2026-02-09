@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Button } from "./ui/button";
-import { AuthDialog } from "./AuthDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Heart, ExternalLink, ArrowRight, ChevronLeft, ChevronRight, Twitter, Linkedin, Github, Star, GitFork } from "lucide-react";
 

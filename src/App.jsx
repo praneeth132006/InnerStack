@@ -5,7 +5,7 @@ import { Dashboard } from "@/components/Dashboard"
 import { ProfilePage } from "@/components/ProfilePage"
 import { AuthPage } from "@/components/AuthPage"
 import { ErrorPage } from "@/components/ErrorPage"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 function App() {
 
@@ -13,7 +13,7 @@ function App() {
   const [page, setPage] = useState("dashboard")
 
   // Simple URL routing on mount
-  useState(() => {
+  useEffect(() => {
     const path = window.location.pathname
     if (path === "/auth") setPage("auth")
     else if (path === "/profile") setPage("profile")
