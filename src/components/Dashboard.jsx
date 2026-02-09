@@ -33,7 +33,7 @@ export function Dashboard({ user }) {
             <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight mb-2">
                             Welcome back, <span className="text-primary">{user?.name || "Builder"}</span>
@@ -46,9 +46,12 @@ export function Dashboard({ user }) {
                     <AddHabitDialog />
                 </div>
 
-                {/* Compact Year Heatmap (Mini) */}
-                <div className="mb-8 p-1 rounded-lg border border-white/[0.05] bg-white/[0.02]">
-                    <CalendarHeatmap variant="compact" />
+                {/* Yearly Activity Section (replacing red region) */}
+                <div className="mb-8 p-6 rounded-2xl border border-white/10 bg-white/5 shadow-2xl animate-in slide-in-from-top-4 duration-700">
+                    <CalendarHeatmap
+                        title="Yearly Activity"
+                        description="Your long-term consistency visualization."
+                    />
                 </div>
 
                 {/* Stats Overview */}
@@ -57,7 +60,7 @@ export function Dashboard({ user }) {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="space-y-6">
+                <div className="space-y-6 mt-8">
                     {/* View Switcher */}
                     <div className="flex items-center justify-between mb-6">
                         <Tabs value={view} onValueChange={setView} className="w-full">
@@ -90,8 +93,6 @@ export function Dashboard({ user }) {
                             </div>
                         )}
 
-
-
                         {view === "month" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
                                 <HabitMatrix habits={habits} mode="month" />
@@ -99,14 +100,21 @@ export function Dashboard({ user }) {
                         )}
 
                         {view === "year" && (
-                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                                <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
-                                    <div className="mb-6">
-                                        <h2 className="text-xl font-semibold mb-1 text-white">Yearly Activity</h2>
-                                        <p className="text-slate-400">Your long-term consistency visualization.</p>
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in space-y-8">
+                                {habits.map((habit) => (
+                                    <div key={habit.id} className="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-xl hover:shadow-primary/5 transition-shadow duration-500">
+                                        <CalendarHeatmap
+                                            specificHabitId={habit.id}
+                                            title={habit.name}
+                                            description={`Consistency visualization for ${habit.name}.`}
+                                        />
                                     </div>
-                                    <CalendarHeatmap />
-                                </div>
+                                ))}
+                                {habits.length === 0 && (
+                                    <div className="bg-white/5 p-12 rounded-2xl border border-white/5 text-center text-slate-500">
+                                        No habits found. Start tracking to see yearly data!
+                                    </div>
+                                )}
                             </div>
                         )}
 

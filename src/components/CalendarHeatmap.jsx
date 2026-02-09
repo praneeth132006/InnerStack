@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export function CalendarHeatmap({ specificHabitId = null, variant = "full" }) {
+export function CalendarHeatmap({ specificHabitId = null, variant = "full", title = null, description = null }) {
     const { habits } = useHabits();
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const isCompact = variant === "compact";
@@ -86,23 +86,23 @@ export function CalendarHeatmap({ specificHabitId = null, variant = "full" }) {
         return (
             <div className="w-full">
                 <div className="overflow-x-auto custom-scrollbar pb-1">
-                    <div className="inline-flex gap-[2px]">
+                    <div className="inline-flex gap-[3.5px]">
                         {weeks.map((week, weekIdx) => (
-                            <div key={`week-${weekIdx}`} className="flex flex-col gap-[2px] flex-shrink-0">
+                            <div key={`week-${weekIdx}`} className="flex flex-col gap-[3.5px] flex-shrink-0">
                                 {week.map((day, dayIdx) => {
                                     const dateStr = format(day, "yyyy-MM-dd");
                                     const isInYear = day.getFullYear() === selectedYear;
                                     const count = data.counts.get(dateStr) || 0;
                                     const intensity = getIntensityClass(count, data.maxCount);
 
-                                    if (!isInYear) return <div key={dateStr} className="w-2 h-2 bg-transparent" />;
+                                    if (!isInYear) return <div key={dateStr} className="w-[6px] h-[6px] bg-transparent" />;
 
                                     return (
                                         <TooltipProvider key={dateStr}>
                                             <Tooltip delayDuration={0}>
                                                 <TooltipTrigger asChild>
                                                     <div
-                                                        className={`w-2 h-2 rounded-[1px] ${intensity} transition-all duration-300 hover:scale-150 hover:z-10 cursor-pointer`}
+                                                        className={`w-[6px] h-[6px] rounded-[1px] ${count === 0 ? 'bg-white/[0.08]' : intensity} transition-all duration-300 hover:scale-[2.5] hover:z-20 cursor-pointer`}
                                                     />
                                                 </TooltipTrigger>
                                                 <TooltipContent className="bg-slate-900 border-white/10 text-white text-[10px] p-2 rounded-lg shadow-xl backdrop-blur-md">
@@ -128,19 +128,26 @@ export function CalendarHeatmap({ specificHabitId = null, variant = "full" }) {
 
     return (
         <div className="w-full space-y-6">
+            <div className="space-y-1">
+                <h2 className="text-xl font-bold text-white">{title || (specificHabitId ? "Habit Consistency" : "Yearly Activity")}</h2>
+                <p className="text-slate-400 text-sm">
+                    {description || (specificHabitId ? "Your consistency for this specific habit." : "Your long-term consistency visualization.")}
+                </p>
+            </div>
+
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
-                        {specificHabitId ? "Habit Consistency" : "Yearly Activity"}
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                        ACTIVITY FEED
                     </h3>
-                    <div className="flex items-center bg-white/5 rounded-full border border-white/10 p-1 text-xs">
+                    <div className="flex items-center bg-white/5 rounded-full border border-white/10 p-0.5 text-[10px]">
                         <button
                             onClick={() => setSelectedYear(y => y - 1)}
                             className="p-1 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white"
                         >
                             <ChevronLeft className="h-3 w-3" />
                         </button>
-                        <span className="px-2 font-semibold text-slate-200">{selectedYear}</span>
+                        <span className="px-2 font-bold text-slate-200">{selectedYear}</span>
                         <button
                             onClick={() => setSelectedYear(y => y + 1)}
                             className="p-1 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white"
@@ -237,11 +244,19 @@ export function CalendarHeatmap({ specificHabitId = null, variant = "full" }) {
 
             {/* Stats Summary Panel */}
             <div className="grid grid-cols-3 gap-6">
-                {[
-                    { label: "Active Days", value: data.totalActiveDays, color: "text-emerald-400" },
-                    { label: "Total Goals", value: Array.from(data.counts.values()).reduce((a, b) => a + b, 0), color: "text-blue-400" },
-                    { label: "Success Rate", value: Math.round((data.totalActiveDays / 365) * 100) + "%", color: "text-purple-400" }
-                ].map(stat => (
+                {(() => {
+                    const totalGoals = Array.from(data.counts.values()).reduce((a, b) => a + b, 0);
+                    const daysPassed = selectedYear === new Date().getFullYear()
+                        ? Math.floor((new Date() - new Date(selectedYear, 0, 1)) / (1000 * 60 * 60 * 24)) + 1
+                        : 365;
+                    const successRate = Math.round((totalGoals / (daysPassed * (specificHabitId ? 1 : (habits.length || 1)))) * 100);
+
+                    return [
+                        { label: "Active Days", value: data.totalActiveDays, color: "text-emerald-400" },
+                        { label: "Total Goals", value: totalGoals, color: "text-blue-400" },
+                        { label: "Success Rate", value: `${Math.min(successRate, 100)}%`, color: "text-purple-400" }
+                    ];
+                })().map(stat => (
                     <div key={stat.label} className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 flex flex-col items-center justify-center">
                         <div className={`text-xl font-black mb-1 ${stat.color}`}>{stat.value}</div>
                         <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stat.label}</div>
