@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Flame, Calendar, Trash2, Edit2, Check, X, Target } from "lucide-react";
 import { CalendarHeatmap } from "./CalendarHeatmap";
-import { HabitMatrix } from "./HabitMatrix";
 import { Card, CardContent } from "@/components/ui/card";
 
 const ICONS = ["🎯", "💧", "🏃", "🧘", "📚", "💊", "💪", "🥗", "🧠", "💼", "🧹", "🪴", "🎨", "🎵", "💰"];
@@ -132,67 +130,52 @@ export function TaskDetailDialog({ habit, open, onOpenChange }) {
                         </DialogFooter>
                     </div>
                 ) : (
-                    <Tabs defaultValue="overview" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="overview">Overview</TabsTrigger>
-                            <TabsTrigger value="history">History</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="overview" className="space-y-6 mt-4">
-                            {/* Stats Grid */}
-                            <div className="grid grid-cols-3 gap-4">
-                                <Card className="bg-muted/30 border-none">
-                                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                        <Flame className="h-5 w-5 text-orange-500 mb-2" />
-                                        <div className="text-2xl font-bold">{streak}</div>
-                                        <div className="text-xs text-muted-foreground">Current Streak</div>
-                                    </CardContent>
-                                </Card>
-                                <Card className="bg-muted/30 border-none">
-                                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                        <Check className="h-5 w-5 text-green-500 mb-2" />
-                                        <div className="text-2xl font-bold">{totalCompletions}</div>
-                                        <div className="text-xs text-muted-foreground">Total Days</div>
-                                    </CardContent>
-                                </Card>
-                                <Card className="bg-muted/30 border-none">
-                                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                        <Target className="h-5 w-5 text-blue-500 mb-2" />
-                                        <div className="text-2xl font-bold">{completionRate}%</div>
-                                        <div className="text-xs text-muted-foreground">Completion Rate</div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* Description */}
-                            {habit.description && (
-                                <div className="bg-muted/20 p-4 rounded-lg">
-                                    <h4 className="text-sm font-medium mb-1">Description</h4>
-                                    <p className="text-sm text-muted-foreground">{habit.description}</p>
-                                </div>
-                            )}
-
-                            {/* Delete Option */}
-                            <div className="pt-4 border-t">
-                                <Button
-                                    variant="ghost"
-                                    className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive justify-start px-0"
-                                    onClick={handleDelete}
-                                >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete Habit
-                                </Button>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="history" className="mt-4">
-                            <Card className="border-none shadow-none bg-muted/20">
-                                <CardContent className="p-4">
-                                    <HabitMatrix habits={[habit]} mode="month" />
+                    <div className="space-y-6 mt-4">
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-3 gap-4">
+                            <Card className="bg-muted/30 border-none">
+                                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                                    <Flame className="h-5 w-5 text-orange-500 mb-2" />
+                                    <div className="text-2xl font-bold">{streak}</div>
+                                    <div className="text-xs text-muted-foreground">Current Streak</div>
                                 </CardContent>
                             </Card>
-                        </TabsContent>
-                    </Tabs>
+                            <Card className="bg-muted/30 border-none">
+                                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                                    <Check className="h-5 w-5 text-green-500 mb-2" />
+                                    <div className="text-2xl font-bold">{totalCompletions}</div>
+                                    <div className="text-xs text-muted-foreground">Total Days</div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-muted/30 border-none">
+                                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                                    <Target className="h-5 w-5 text-blue-500 mb-2" />
+                                    <div className="text-2xl font-bold">{completionRate}%</div>
+                                    <div className="text-xs text-muted-foreground">Completion Rate</div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Description */}
+                        {habit.description && (
+                            <div className="bg-muted/20 p-4 rounded-lg">
+                                <h4 className="text-sm font-medium mb-1">Description</h4>
+                                <p className="text-sm text-muted-foreground">{habit.description}</p>
+                            </div>
+                        )}
+
+                        {/* Delete Option */}
+                        <div className="pt-4 border-t">
+                            <Button
+                                variant="ghost"
+                                className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive justify-start px-0"
+                                onClick={handleDelete}
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Habit
+                            </Button>
+                        </div>
+                    </div>
                 )}
             </DialogContent>
         </Dialog>
