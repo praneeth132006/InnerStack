@@ -14,7 +14,7 @@ function getToday() {
 
 const VIEW_OPTIONS = [
     { value: "today", label: "Today" },
-    { value: "week", label: "Week" },
+    // Week view removed as per request
     { value: "month", label: "Month" },
     { value: "year", label: "Year" },
     { value: "all", label: "All" },
@@ -33,7 +33,7 @@ export function Dashboard({ user }) {
             <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight mb-2">
                             Welcome back, <span className="text-primary">{user?.name || "Builder"}</span>
@@ -44,6 +44,11 @@ export function Dashboard({ user }) {
                         </p>
                     </div>
                     <AddHabitDialog />
+                </div>
+
+                {/* Compact Year Heatmap (Mini) */}
+                <div className="mb-8 p-1 rounded-lg border border-white/[0.05] bg-white/[0.02]">
+                    <CalendarHeatmap variant="compact" />
                 </div>
 
                 {/* Stats Overview */}
@@ -85,11 +90,7 @@ export function Dashboard({ user }) {
                             </div>
                         )}
 
-                        {view === "week" && (
-                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                                <HabitMatrix habits={habits} mode="week" />
-                            </div>
-                        )}
+
 
                         {view === "month" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">

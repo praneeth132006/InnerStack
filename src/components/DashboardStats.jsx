@@ -68,7 +68,7 @@ export function DashboardStats({ habits }) {
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {STATS.map((stat) => (
-                <Card key={stat.title} className="bg-muted/10 border-none shadow-none hover:bg-muted/20 transition-colors">
+                <Card key={stat.title} className="bg-white/10 border-none shadow-none hover:bg-white/15 transition-colors">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
                             {stat.title}

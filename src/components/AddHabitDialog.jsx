@@ -40,7 +40,6 @@ export function AddHabitDialog() {
     const [customDays, setCustomDays] = useState([]);
     const [targetCount, setTargetCount] = useState(3);
     const [targetDate, setTargetDate] = useState(null);
-    const [chainFromId, setChainFromId] = useState("");
     const [category, setCategory] = useState("general");
 
     const resetForm = () => {
@@ -52,8 +51,8 @@ export function AddHabitDialog() {
         setCustomDays([]);
         setTargetCount(3);
         setTargetDate(null);
-        setChainFromId("");
-        setCategory("general");
+        setTargetDate(null);
+        setCategory(category);
     };
 
     const handleSubmit = () => {
@@ -66,7 +65,6 @@ export function AddHabitDialog() {
             customDays,
             targetCount,
             targetDate: targetDate ? targetDate.toISOString().split("T")[0] : null,
-            chainFromId: chainFromId || null,
             category,
         });
         resetForm();
@@ -93,12 +91,10 @@ export function AddHabitDialog() {
                     <DialogTitle>
                         {step === 1 && "New Habit"}
                         {step === 2 && "Set Frequency"}
-                        {step === 3 && "Link to Chain (Optional)"}
                     </DialogTitle>
                     <DialogDescription>
                         {step === 1 && "What habit do you want to build?"}
                         {step === 2 && "How often will you do this?"}
-                        {step === 3 && "Connect this habit to an existing one."}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -250,34 +246,13 @@ export function AddHabitDialog() {
                     </div>
                 )}
 
-                {step === 3 && (
-                    <div className="grid gap-4 py-4">
-                        <p className="text-sm text-muted-foreground">
-                            If this habit should start after another, link it here. Breaking the first habit will show this one as affected.
-                        </p>
-                        <Select value={chainFromId || "none"} onValueChange={(v) => setChainFromId(v === "none" ? "" : v)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="None (Start fresh)" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {habits.map((h) => (
-                                    <SelectItem key={h.id} value={h.id}>
-                                        {h.icon} {h.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
-
                 <DialogFooter>
                     {step > 1 && (
                         <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
                             Back
                         </Button>
                     )}
-                    {step < 3 ? (
+                    {step < 2 ? (
                         <Button onClick={() => setStep((s) => s + 1)} disabled={step === 1 && !name.trim()}>
                             Next
                         </Button>
