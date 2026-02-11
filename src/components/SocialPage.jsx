@@ -9,16 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trophy, Users, Share2, Copy, Zap, Globe, Lock, Crown, ArrowRight, Plus, Search, Flame, Dumbbell, Brain, Briefcase, Swords, Skull, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createPublicChallenge, getPublicChallenges, joinPublicChallenge, getChallengeByCode } from "@/lib/databaseService";
+import { createChallenge, getPublicChallenges, joinPublicChallenge, getChallengeByCode, getCreatedChallenges } from "@/lib/databaseService";
 
-const BOSS_STATS = {
-    name: "The Entropy",
-    maxHealth: 10000,
-    currentHealth: 6420, // Mocked for now, dynamic later
-    level: 5,
-    description: "Chaos incarnate. Every habit completed deals 1 DMG to this global menace."
-};
-
+// Boss Battle Removed
 const GLOBAL_CHALLENGES = [
     {
         id: "winter-arc",
@@ -75,6 +68,8 @@ export function SocialPage({ user }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("all");
     const [joinCode, setJoinCode] = useState("");
+    const [createdCode, setCreatedCode] = useState(null); // Code to show in modal
+    const [myChallenges, setMyChallenges] = useState([]);
 
     // Create Challenge State
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -89,11 +84,20 @@ export function SocialPage({ user }) {
 
     useEffect(() => {
         loadCommunityChallenges();
-    }, []);
+        if (user?.uid) {
+            loadUserChallenges();
+        }
+    }, [user]);
 
     const loadCommunityChallenges = async () => {
         const challenges = await getPublicChallenges();
         setCommunityChallenges(challenges);
+    };
+
+    const loadUserChallenges = async () => {
+        if (!user?.uid) return;
+        const challenges = await getCreatedChallenges(user.uid);
+        setMyChallenges(challenges);
     };
 
     const handleCreateChallenge = async () => {
@@ -109,17 +113,16 @@ export function SocialPage({ user }) {
         };
 
         if (newChallenge.isPublic) {
-            await createPublicChallenge(challenge);
+            await createChallenge(user?.uid, challenge);
             loadCommunityChallenges();
             alert("Challenge created and published to the community!");
         } else {
-            // Private logic - just show the code
-            setInviteCode(challenge.code);
-            // Switch to friend tab to show the code
-            const friendsTab = document.querySelector('[data-state="inactive"][value="friends"]');
-            if (friendsTab) friendsTab.click();
-            alert(`Private challenge created! Your code is ${challenge.code}. Share it with friends to join.`);
+            // Create Private Challenge in DB
+            const created = await createChallenge(user?.uid, challenge);
+            setCreatedCode(created.code); // Show this in a modal
         }
+
+        loadUserChallenges(); // Refresh my list
 
         // Auto-join creator
         newChallenge.habits.forEach(h => {
@@ -216,46 +219,33 @@ export function SocialPage({ user }) {
                 </div>
             </div>
 
-            {/* Boss Battle Section */}
-            <Card className="border-red-500/20 bg-gradient-to-br from-red-950/10 to-background overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-red-500/20"></div>
-                <CardHeader className="pb-2 relative z-10">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2 text-red-500 font-bold uppercase tracking-widest text-xs">
-                            <Swords className="h-4 w-4" /> Global Boss Raid • Lvl {BOSS_STATS.level}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-mono text-muted-foreground">
-                            <Users className="h-3 w-3" /> 12.5k Fighters
-                        </div>
-                    </div>
-                    <CardTitle className="text-2xl md:text-3xl font-black italic flex items-center gap-3 mt-1">
-                        <Skull className="h-8 w-8 text-red-500" /> {BOSS_STATS.name}
-                    </CardTitle>
-                    <CardDescription>{BOSS_STATS.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-6 relative z-10">
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-sm font-bold">
-                            <span className="text-red-400">{BOSS_STATS.currentHealth} HP Left</span>
-                            <span className="text-muted-foreground">{BOSS_STATS.maxHealth} HP</span>
-                        </div>
-                        <div className="h-6 w-full bg-secondary/50 rounded-full overflow-hidden border border-red-500/20 relative">
-                            {/* Health Bar */}
-                            <div
-                                className="h-full bg-gradient-to-r from-red-600 to-orange-500 transition-all duration-1000 ease-out relative"
-                                style={{ width: `${(BOSS_STATS.currentHealth / BOSS_STATS.maxHealth) * 100}%` }}
-                            >
-                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/diagonal-striped-brick.png')] opacity-30 mix-blend-overlay"></div>
+            {/* Code Reveal Dialog */
+                createdCode && (
+                    <Dialog open={!!createdCode} onOpenChange={() => setCreatedCode(null)}>
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>Challenge Created Successfully! 🎉</DialogTitle>
+                            </DialogHeader>
+                            <div className="flex flex-col items-center justify-center space-y-4 py-4">
+                                <p className="text-center text-muted-foreground">
+                                    Share this code with your friends so they can join your challenge.
+                                </p>
+                                <div className="text-4xl font-mono font-bold tracking-widest text-primary bg-muted p-4 rounded-xl border border-primary/20 w-full text-center select-all">
+                                    {createdCode}
+                                </div>
+                                <Button
+                                    className="w-full gap-2"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(createdCode);
+                                        alert("Code copied to clipboard!");
+                                    }}
+                                >
+                                    <Copy className="h-4 w-4" /> Copy Code
+                                </Button>
                             </div>
-                        </div>
-                        <p className="text-xs text-center text-muted-foreground mt-2">
-                            Global Community Goal: Defeat {BOSS_STATS.name} by Sunday to unlock the <span className="text-amber-500 font-bold">"Chaos Slayer"</span> badge.
-                        </p>
-                    </div>
-                </CardContent>
-                {/* Background Decoration */}
-                <Skull className="absolute -right-8 -bottom-8 h-48 w-48 text-red-500/5 rotate-12" />
-            </Card>
+                        </DialogContent>
+                    </Dialog>
+                )}
 
             <Tabs defaultValue="explore" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8">
@@ -489,6 +479,49 @@ export function SocialPage({ user }) {
                             </CardFooter>
                         </Card>
                     </div>
+
+                    {/* My Challenges List */}
+                    {myChallenges.length > 0 && (
+                        <div className="mt-8">
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <Crown className="h-5 w-5 text-yellow-500" /> My Active Challenges
+                            </h3>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {myChallenges.map((challenge) => (
+                                    <Card key={challenge.id} className="bg-muted/20 border-l-4 border-l-primary">
+                                        <CardContent className="p-4 flex justify-between items-center">
+                                            <div>
+                                                <div className="font-bold flex items-center gap-2">
+                                                    {challenge.title}
+                                                    {!challenge.isPublic && <Lock className="h-3 w-3 text-muted-foreground" />}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground mt-1">
+                                                    {challenge.participants} Participant{challenge.participants !== 1 && 's'} • {challenge.duration} Days
+                                                </div>
+                                                {!challenge.isPublic && challenge.code && (
+                                                    <div className="mt-2 p-1.5 bg-background rounded border font-mono text-xs flex items-center gap-2 w-fit">
+                                                        <span className="select-all font-bold tracking-wider">{challenge.code}</span>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-5 w-5"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(challenge.code);
+                                                                alert("Copied!");
+                                                            }}
+                                                        >
+                                                            <Copy className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-2xl opacity-50">{challenge.icon || "🏆"}</div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </TabsContent>
             </Tabs>
         </div>

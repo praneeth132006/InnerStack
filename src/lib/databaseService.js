@@ -155,9 +155,9 @@ export async function getUserProfile(userId) {
 }
 
 /**
- * Create a public challenge
+ * Create a new challenge (public or private)
  */
-export async function createPublicChallenge(challenge) {
+export async function createChallenge(userId, challenge) {
     if (!isFirebaseConfigured()) return null;
 
     const challengesRef = ref(database, 'challenges');
@@ -165,10 +165,18 @@ export async function createPublicChallenge(challenge) {
     const challengeData = {
         ...challenge,
         id: newChallengeRef.key,
+        creatorId: userId,
         participants: 1, // Creator joins automatically
         createdAt: Date.now(),
     };
     await set(newChallengeRef, challengeData);
+
+    // Link to user
+    if (userId) {
+        const userChallengesRef = ref(database, `users/${userId}/createdChallenges/${newChallengeRef.key}`);
+        await set(userChallengesRef, true);
+    }
+
     return challengeData;
 }
 
@@ -220,4 +228,28 @@ export async function joinPublicChallenge(challengeId) {
             participants: currentParticipants + 1
         });
     }
+}
+
+/**
+ * Get challenges created by a user
+ */
+export async function getCreatedChallenges(userId) {
+    if (!isFirebaseConfigured() || !userId) return [];
+
+    const userChallengesRef = ref(database, `users/${userId}/createdChallenges`);
+    const snapshot = await get(userChallengesRef);
+    if (!snapshot.exists()) return [];
+
+    const challengeIds = Object.keys(snapshot.val());
+    const challenges = [];
+
+    for (const id of challengeIds) {
+        const challengeRef = ref(database, `challenges/${id}`);
+        const challengeSnapshot = await get(challengeRef);
+        if (challengeSnapshot.exists()) {
+            challenges.push({ id, ...challengeSnapshot.val() });
+        }
+    }
+
+    return challenges;
 }

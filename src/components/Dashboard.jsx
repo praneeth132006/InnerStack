@@ -55,13 +55,7 @@ export function Dashboard({ user }) {
                     <HabitEcosystem />
                 </div>
 
-                {/* Yearly Activity Section */}
-                <div className="mb-8 p-6 rounded-2xl border border-white/10 bg-white/5 shadow-2xl animate-in slide-in-from-top-4 duration-700 delay-200">
-                    <CalendarHeatmap
-                        title="Yearly Activity"
-                        description="Your long-term consistency visualization."
-                    />
-                </div>
+
 
                 {/* Stats Overview */}
                 <div className="animate-in slide-in-from-bottom-2 duration-500 delay-300">

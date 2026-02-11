@@ -156,6 +156,15 @@ export function TaskDetailDialog({ habit, open, onOpenChange }) {
                             </Card>
                         </div>
 
+                        {/* Yearly Activity */}
+                        <div className="bg-muted/10 p-4 rounded-lg border border-border/50">
+                            <CalendarHeatmap
+                                specificHabitId={habit.id}
+                                title="Yearly Consistency"
+                                description="Your activity visualization for this habit."
+                            />
+                        </div>
+
                         {/* Description */}
                         {habit.description && (
                             <div className="bg-muted/20 p-4 rounded-lg">
