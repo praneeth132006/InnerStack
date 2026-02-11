@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Check, Target, TrendingUp, Calendar, Bell, Zap, Shield, Heart, ExternalLink, ArrowRight, ChevronLeft, ChevronRight, Twitter, Linkedin, Github, Star, GitFork } from "lucide-react";
@@ -107,7 +108,8 @@ export function Hero({ onNavigate }) {
         <div className="bg-black text-white selection:bg-primary/30">
             {/* Hero Section */}
             <section className="relative overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32">
-                <div className="container mx-auto px-4 text-center">
+                <HeroGrid />
+                <div className="container mx-auto px-4 text-center relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -181,7 +183,58 @@ export function Hero({ onNavigate }) {
                 </div>
             </section>
 
-            {/* Pricing Section */}
+
+
+            {/* Testimonials Section */}
+            <section className="py-24">
+                <div className="container mx-auto px-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-16"
+                    >
+                        <h2 className="text-4xl font-bold mb-4">Loved by Thousands</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+                            Join the community of people building better habits every day.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        {TESTIMONIALS.map((testimonial, i) => (
+                            <motion.div
+                                key={testimonial.name}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                            >
+                                <Card className="h-full bg-white/5 border-none shadow-none hover:bg-white/10 transition-colors">
+                                    <CardContent className="pt-8">
+                                        <div className="flex items-center gap-1 mb-6">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                                            ))}
+                                        </div>
+                                        <p className="text-slate-300 mb-6 text-lg">"{testimonial.content}"</p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary">
+                                                {testimonial.avatar}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-white">{testimonial.name}</p>
+                                                <p className="text-sm text-slate-400">{testimonial.role}</p>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing Section (Moved) */}
             <section id="pricing" className="py-24">
                 <div className="container mx-auto px-4">
                     <motion.div
@@ -231,55 +284,6 @@ export function Hero({ onNavigate }) {
                                         <Button className={`w-full h-12 rounded-full text-base ${plan.popular ? "" : "bg-white/10 hover:bg-white/20 text-white border-none"}`} variant={plan.popular ? "default" : "outline"} onClick={() => onNavigate("auth")}>
                                             {plan.cta}
                                         </Button>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Testimonials Section */}
-            <section className="py-24">
-                <div className="container mx-auto px-4">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-center mb-16"
-                    >
-                        <h2 className="text-4xl font-bold mb-4">Loved by Thousands</h2>
-                        <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-                            Join the community of people building better habits every day.
-                        </p>
-                    </motion.div>
-
-                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {TESTIMONIALS.map((testimonial, i) => (
-                            <motion.div
-                                key={testimonial.name}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                            >
-                                <Card className="h-full bg-white/5 border-none shadow-none hover:bg-white/10 transition-colors">
-                                    <CardContent className="pt-8">
-                                        <div className="flex items-center gap-1 mb-6">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                                            ))}
-                                        </div>
-                                        <p className="text-slate-300 mb-6 text-lg">"{testimonial.content}"</p>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary">
-                                                {testimonial.avatar}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-white">{testimonial.name}</p>
-                                                <p className="text-sm text-slate-400">{testimonial.role}</p>
-                                            </div>
-                                        </div>
                                     </CardContent>
                                 </Card>
                             </motion.div>
@@ -463,6 +467,92 @@ export function Hero({ onNavigate }) {
                     </div>
                 </div>
             </footer>
+
         </div>
     );
 }
+
+function HeroGrid() {
+    const containerRef = useRef(null);
+    const [cells, setCells] = useState([]);
+
+    useEffect(() => {
+        // Calculate grid size
+        const updateGrid = () => {
+            if (!containerRef.current) return;
+            const width = window.innerWidth;
+            const height = 1000; // Fixed height for hero
+
+            // Smaller Size: 16px + 4px gap = 20px
+            const cols = Math.floor(width / 20);
+            const rows = Math.floor(height / 20);
+            setCells(Array.from({ length: cols * rows }));
+        };
+
+        updateGrid();
+        window.addEventListener('resize', updateGrid);
+        return () => window.removeEventListener('resize', updateGrid);
+    }, []);
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (!containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            containerRef.current.style.setProperty('--mouse-x', `${x}px`);
+            containerRef.current.style.setProperty('--mouse-y', `${y}px`);
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    // Randomize colors once
+    const getGreen = (i) => {
+        const greens = ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e"];
+        return greens[(i * 12345) % greens.length];
+    };
+
+    return (
+        <div
+            ref={containerRef}
+            className="absolute inset-0 z-0 overflow-hidden"
+            style={{
+                '--mouse-x': '-500px',
+                '--mouse-y': '-500px',
+                maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+            }}
+        >
+            {/* Background Grid Pattern (Static) */}
+            <div className="absolute inset-0 flex flex-wrap content-start gap-1 p-1 opacity-10">
+                {cells.map((_, i) => (
+                    <div key={`bg-${i}`} className="w-[16px] h-[16px] bg-white/10 rounded" />
+                ))}
+            </div>
+
+            {/* Highlight Layer (Revealed by Mask) */}
+            <div
+                className="absolute inset-0 flex flex-wrap content-start gap-1 p-1 transition-opacity duration-300"
+                style={{
+                    maskImage: 'radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), black 0%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), black 0%, transparent 100%)',
+                }}
+            >
+                {cells.map((_, i) => (
+                    <div
+                        key={`hl-${i}`}
+                        className="w-[16px] h-[16px] rounded shadow-sm"
+                        style={{
+                            backgroundColor: getGreen(i),
+                            opacity: Math.random() * 0.5 + 0.5
+                        }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+

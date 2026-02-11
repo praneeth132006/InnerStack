@@ -18,7 +18,6 @@ const VIEW_OPTIONS = [
     { value: "today", label: "Today" },
     { value: "challenges", label: "Challenges" },
     { value: "month", label: "Month" },
-    { value: "year", label: "Year" },
     { value: "all", label: "All" },
 ];
 
@@ -33,7 +32,7 @@ export function Dashboard({ user }) {
     const standardHabits = useMemo(() => habits.filter(h => !h.isChallenge), [habits]);
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-black text-white selection:bg-primary/30">
+        <div className="min-h-[calc(100vh-4rem)] bg-black text-white selection:bg-primary/30 overflow-x-hidden">
             <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500">
 
                 {/* Header */}
@@ -140,24 +139,7 @@ export function Dashboard({ user }) {
                             </div>
                         )}
 
-                        {view === "year" && (
-                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in space-y-8">
-                                {standardHabits.map((habit) => (
-                                    <div key={habit.id} className="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-xl hover:shadow-primary/5 transition-shadow duration-500">
-                                        <CalendarHeatmap
-                                            specificHabitId={habit.id}
-                                            title={habit.name}
-                                            description={`Consistency visualization for ${habit.name}.`}
-                                        />
-                                    </div>
-                                ))}
-                                {standardHabits.length === 0 && (
-                                    <div className="bg-white/5 p-12 rounded-2xl border border-white/5 text-center text-slate-500">
-                                        No habits found. Start tracking to see yearly data!
-                                    </div>
-                                )}
-                            </div>
-                        )}
+
 
                         {view === "all" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
