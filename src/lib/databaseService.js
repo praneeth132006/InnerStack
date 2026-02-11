@@ -153,3 +153,71 @@ export async function getUserProfile(userId) {
     const snapshot = await get(profileRef);
     return snapshot.exists() ? snapshot.val() : null;
 }
+
+/**
+ * Create a public challenge
+ */
+export async function createPublicChallenge(challenge) {
+    if (!isFirebaseConfigured()) return null;
+
+    const challengesRef = ref(database, 'challenges');
+    const newChallengeRef = push(challengesRef);
+    const challengeData = {
+        ...challenge,
+        id: newChallengeRef.key,
+        participants: 1, // Creator joins automatically
+        createdAt: Date.now(),
+    };
+    await set(newChallengeRef, challengeData);
+    return challengeData;
+}
+
+/**
+ * Get all public challenges
+ */
+export async function getPublicChallenges() {
+    if (!isFirebaseConfigured()) return [];
+
+    const publicChallengesRef = ref(database, 'challenges');
+    const snapshot = await get(publicChallengesRef);
+    if (!snapshot.exists()) return [];
+
+    const data = snapshot.val();
+    return Object.keys(data)
+        .map((id) => ({ id, ...data[id] }))
+        .filter(c => c.isPublic !== false);
+}
+
+/**
+ * Get challenge by invite code
+ */
+export async function getChallengeByCode(code) {
+    if (!isFirebaseConfigured()) return null;
+
+    const challengesRef = ref(database, 'challenges');
+    const snapshot = await get(challengesRef);
+    if (!snapshot.exists()) return null;
+
+    const data = snapshot.val();
+    const challengeId = Object.keys(data).find(id => data[id].code === code);
+
+    return challengeId ? { id: challengeId, ...data[challengeId] } : null;
+}
+
+/**
+ * Join a public challenge (increment participant count)
+ */
+export async function joinPublicChallenge(challengeId) {
+    if (!isFirebaseConfigured()) return;
+
+    const challengeRef = ref(database, `challenges/${challengeId}`);
+    const snapshot = await get(challengeRef);
+    if (snapshot.exists()) {
+        const currentData = snapshot.val();
+        const currentParticipants = currentData.participants || 0;
+        await update(challengeRef, {
+            ...currentData,
+            participants: currentParticipants + 1
+        });
+    }
+}
