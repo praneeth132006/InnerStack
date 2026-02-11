@@ -5,6 +5,7 @@ import { AddHabitDialog } from "./AddHabitDialog";
 import { HabitList } from "./HabitList";
 import { CalendarHeatmap } from "./CalendarHeatmap";
 import { DashboardStats } from "./DashboardStats";
+import { HabitEcosystem } from "./HabitEcosystem";
 import { HabitMatrix } from "./HabitMatrix"; // Replaces MonthCalendar and List view for history
 import { Calendar, LayoutGrid, List } from "lucide-react";
 import { formatDateLocal } from "@/lib/utils";
@@ -47,8 +48,13 @@ export function Dashboard({ user }) {
                     <AddHabitDialog />
                 </div>
 
-                {/* Yearly Activity Section (replacing red region) */}
-                <div className="mb-8 p-6 rounded-2xl border border-white/10 bg-white/5 shadow-2xl animate-in slide-in-from-top-4 duration-700">
+                {/* 🌿 Spatial Habit Ecosystem */}
+                <div className="mb-8 animate-in slide-in-from-top-4 duration-700">
+                    <HabitEcosystem />
+                </div>
+
+                {/* Yearly Activity Section */}
+                <div className="mb-8 p-6 rounded-2xl border border-white/10 bg-white/5 shadow-2xl animate-in slide-in-from-top-4 duration-700 delay-200">
                     <CalendarHeatmap
                         title="Yearly Activity"
                         description="Your long-term consistency visualization."
@@ -56,7 +62,7 @@ export function Dashboard({ user }) {
                 </div>
 
                 {/* Stats Overview */}
-                <div className="animate-in slide-in-from-bottom-2 duration-500 delay-100">
+                <div className="animate-in slide-in-from-bottom-2 duration-500 delay-300">
                     <DashboardStats habits={habits} />
                 </div>
 
