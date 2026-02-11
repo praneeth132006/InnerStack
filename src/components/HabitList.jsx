@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useHabits } from "@/context/HabitContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link2, Flame, AlertCircle, Flag } from "lucide-react";
+import { Link2, Flame, AlertCircle, Flag, Clock, Coins } from "lucide-react";
+
 import { TaskDetailDialog } from "./TaskDetailDialog";
 import {
     Dialog,
@@ -96,6 +97,33 @@ export function HabitList({ habits, date }) {
                                                 <Flag className="h-4 w-4 text-purple-500 fill-purple-500/20" />
                                             )}
                                         </div>
+
+                                        {/* Challenge Progress */}
+                                        {habit.isChallenge && (
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-purple-500 transition-all duration-500"
+                                                        style={{ width: `${Math.min(100, (Object.values(habit.history || {}).filter(Boolean).length / (habit.duration || 7)) * 100)}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-[10px] text-muted-foreground font-mono">
+                                                    {Object.values(habit.history || {}).filter(Boolean).length}/{habit.duration || 7}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Accountability Bet Info */}
+                                        {habit.bet && !habit.bet.resolved && (
+                                            <div className="mt-1.5 flex items-center gap-2 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/10 w-fit">
+                                                <Coins className="h-3 w-3 text-amber-500" />
+                                                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-tighter">Stake: {habit.bet.stake}</span>
+                                                <span className="text-[10px] text-amber-400/80 flex items-center gap-1">
+                                                    <Clock className="h-2.5 w-2.5" />
+                                                    Ends {new Date(habit.bet.deadline).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     {habit.chainFromId && (
                                         <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full" title={`Linked to: ${parentName}`}>

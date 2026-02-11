@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Target, Flame, Calendar, Moon, Sun, Mail, Phone, MapPin, Send, HelpCircle, FileText, Settings, LogOut, LayoutDashboard, Share2 } from "lucide-react";
+import { User, Target, Flame, Calendar, Moon, Sun, Mail, Phone, MapPin, Send, HelpCircle, FileText, Settings, LogOut, LayoutDashboard, Share2, Trophy } from "lucide-react";
 import { useHabits } from "@/context/HabitContext";
+import { cn } from "@/lib/utils";
 import {
     Select,
     SelectContent,
@@ -18,25 +19,39 @@ import {
 } from "@/components/ui/select";
 
 export function ProfilePage({ user, onLogout }) {
-    const { habits, getAllCompletionDates } = useHabits();
+    const { habits, getAllCompletionDates, userStats } = useHabits();
     const { theme, setTheme } = useTheme();
 
     const completions = getAllCompletionDates();
     const totalCompletions = Object.values(completions).reduce((a, b) => a + b, 0);
-    const longestStreak = Math.max(3, Math.min(totalCompletions, 30)); // Placeholder
+    const longestStreak = habits.length > 0 ? Math.max(...habits.map(h => h.streak || 0), 0) : 0;
+
+    const ALL_BADGES = [
+        { id: "Genesis", label: "Seed of Growth", icon: "🌱", description: "Created your very first habit." },
+        { id: "Consistent", label: "Weekly Warrior", icon: "🔥", description: "Maintained a 7-day streak." },
+        { id: "Unstoppable", label: "Master Builder", icon: "🏆", description: "Reached a 30-day milestone." },
+        { id: "Challenge Completed", label: "Challenger", icon: "🚩", description: "Successfully finished a 1-week challenge." },
+        { id: "Elite Challenger", label: "Titan", icon: "💎", description: "Conquered a 30-day challenge." },
+        { id: "Winner", label: "Risk Taker", icon: "🏅", description: "Won your first Accountability Bet." },
+    ];
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border">
                 <div className="p-8 flex flex-col md:flex-row items-center gap-6">
-                    <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-4xl shrink-0 border-4 border-background shadow-xl">
-                        {user?.name?.charAt(0)?.toUpperCase() || <User className="h-10 w-10 text-primary" />}
+                    <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-4xl shrink-0 border-4 border-background shadow-xl relative">
+                        {user?.name?.charAt(0)?.toUpperCase()}
+                        <div className="absolute -bottom-2 -right-2 bg-amber-500 rounded-full px-2 py-0.5 text-[10px] font-bold text-black border-2 border-background flex items-center gap-1">
+                            <Trophy className="h-2.5 w-2.5" />
+                            {userStats?.points || 500}
+                        </div>
                     </div>
                     <div className="text-center md:text-left space-y-2 flex-1">
                         <h1 className="text-3xl font-bold tracking-tight">{user?.name || "Guest User"}</h1>
-                        <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2">
-                            <Mail className="h-4 w-4" /> {user?.email}
+                        <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-4">
+                            <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {user?.email}</span>
+                            <span className="flex items-center gap-1.5 text-amber-500 font-bold"><Flame className="h-3.5 w-3.5" /> Lv.{Math.floor((userStats?.points || 0) / 100)}</span>
                         </p>
                     </div>
                     <div className="flex gap-2">
@@ -71,26 +86,58 @@ export function ProfilePage({ user, onLogout }) {
                 </Card>
                 <Card className="bg-card/50 backdrop-blur border-muted/40">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Best Streak</CardTitle>
-                        <Flame className="h-4 w-4 text-orange-500" />
+                        <CardTitle className="text-sm font-medium">Rest Day Tokens</CardTitle>
+                        <Moon className="h-4 w-4 text-violet-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{longestStreak} Days</div>
-                        <p className="text-xs text-muted-foreground">Keep the fire burning!</p>
+                        <div className="text-2xl font-bold">{userStats?.restDayTokens || 0}</div>
+                        <p className="text-xs text-muted-foreground">Tokens earned via bets</p>
                     </CardContent>
                 </Card>
             </div>
 
             {/* Main Content Tabs */}
-            <Tabs defaultValue="settings" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 max-w-[400px]">
+            <Tabs defaultValue="achievements" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 max-w-[500px]">
+                    <TabsTrigger value="achievements">Achievements</TabsTrigger>
                     <TabsTrigger value="settings">Settings</TabsTrigger>
                     <TabsTrigger value="help">Help & FAQ</TabsTrigger>
                     <TabsTrigger value="contact">Contact</TabsTrigger>
                 </TabsList>
 
                 <div className="mt-6">
-                    {/* Settings Tab */}
+                    {/* Achievements Tab */}
+                    <TabsContent value="achievements" className="animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {ALL_BADGES.map(badge => {
+                                const isEarned = userStats?.earnedBadges?.includes(badge.id);
+                                return (
+                                    <Card key={badge.id} className={cn(
+                                        "transition-all border-dashed hover:border-solid",
+                                        !isEarned && "opacity-60 grayscale bg-muted/20"
+                                    )}>
+                                        <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                                            <div className={cn(
+                                                "w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-1 shadow-inner",
+                                                isEarned ? "bg-primary/20" : "bg-muted shadow-none"
+                                            )}>
+                                                {badge.icon}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold">{badge.label}</h3>
+                                                <p className="text-xs text-muted-foreground">{badge.description}</p>
+                                            </div>
+                                            {isEarned ? (
+                                                <div className="text-[10px] uppercase font-bold text-primary tracking-widest mt-1">Unlocked</div>
+                                            ) : (
+                                                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mt-1">Locked</div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </TabsContent>
                     <TabsContent value="settings" className="space-y-4">
                         <Card>
                             <CardHeader>
@@ -286,6 +333,20 @@ export function ProfilePage({ user, onLogout }) {
                                             <p>
                                                 This is perfect for habits like exercise where rest is actually beneficial. Your streak counter will skip over rest days when calculating your consistency.
                                             </p>
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    <AccordionItem value="eco-7">
+                                        <AccordionTrigger>What are Accountability Bets?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>
+                                                The <strong className="text-foreground">Accountability Bet</strong> is a way to put "skin in the game". You stake your virtual points on a habit and set a deadline for its first completion.
+                                            </p>
+                                            <div className="space-y-2 mt-2">
+                                                <p>✅ <strong className="text-foreground">Win:</strong> Complete the goal before the deadline. You get your stake back, plus 100% bonus points and a Rest Day Token.</p>
+                                                <p>❌ <strong className="text-foreground">Loss:</strong> If the deadline passes without completion, the staked points are forfeited.</p>
+                                            </div>
+                                            <p className="text-xs italic pt-1">Note: This uses virtual points only. No real money or gambling is involved.</p>
                                         </AccordionContent>
                                     </AccordionItem>
                                 </Accordion>

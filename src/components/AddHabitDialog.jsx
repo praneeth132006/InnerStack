@@ -51,6 +51,8 @@ export function AddHabitDialog() {
     const [category, setCategory] = useState("general");
     const [challengeDays, setChallengeDays] = useState(7);
     const [isCustomChallenge, setIsCustomChallenge] = useState(false);
+    const [betStake, setBetStake] = useState(0);
+    const [betDeadline, setBetDeadline] = useState(null);
 
     const resetForm = () => {
         setStep(1);
@@ -63,6 +65,8 @@ export function AddHabitDialog() {
         setCategory("general");
         setChallengeDays(7);
         setIsCustomChallenge(false);
+        setBetStake(0);
+        setBetDeadline(null);
     };
 
     const handleSubmit = () => {
@@ -76,6 +80,12 @@ export function AddHabitDialog() {
             targetDate: targetDate ? formatDateLocal(targetDate) : null,
             category,
             duration: frequency === "challenge" ? challengeDays : null,
+            bet: betStake > 0 ? {
+                stake: betStake,
+                deadline: betDeadline ? formatDateLocal(betDeadline) : formatDateLocal(new Date(Date.now() + 86400000)), // tomorrow
+                resolved: false,
+                won: false
+            } : null,
         });
         resetForm();
         setOpen(false);
@@ -132,10 +142,12 @@ export function AddHabitDialog() {
                     <DialogTitle>
                         {step === 1 && "New Habit"}
                         {step === 2 && "Set Frequency"}
+                        {step === 3 && "Accountability Bet"}
                     </DialogTitle>
                     <DialogDescription>
                         {step === 1 && "What habit do you want to build?"}
                         {step === 2 && "How often will you do this?"}
+                        {step === 3 && "Stake points to stay committed."}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -320,13 +332,57 @@ export function AddHabitDialog() {
                     </div>
                 )}
 
+                {step === 3 && (
+                    <div className="grid gap-6 py-6">
+                        <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex gap-3">
+                            <Trophy className="h-5 w-5 text-amber-500 shrink-0" />
+                            <div>
+                                <h4 className="text-sm font-semibold text-amber-500 uppercase tracking-wider mb-1">Double Support</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    Win your bet → Get 2x points + 1 Rest Day Token.
+                                    <br />
+                                    Lose your bet → Points are forfeited.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="stake" className="text-sm font-medium">Points to Stake</Label>
+                            <Input
+                                id="stake"
+                                type="number"
+                                placeholder="0"
+                                value={betStake}
+                                onChange={(e) => setBetStake(Math.max(0, Number(e.target.value)))}
+                                className="h-11 text-lg font-bold"
+                            />
+                            <p className="text-[10px] text-muted-foreground">You currently have 500 points.</p>
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label className="text-sm font-medium">Deadline for first completion</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className={cn("justify-start text-left font-normal h-11", !betDeadline && "text-muted-foreground")}>
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {betDeadline ? betDeadline.toLocaleDateString() : "Select deadline date"}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar mode="single" selected={betDeadline} onSelect={setBetDeadline} initialFocus />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
+                )}
+
                 <DialogFooter>
                     {step > 1 && (
                         <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
                             Back
                         </Button>
                     )}
-                    {step < 2 ? (
+                    {step < 3 ? (
                         <Button onClick={() => setStep((s) => s + 1)} disabled={step === 1 && !name.trim()}>
                             Next
                         </Button>

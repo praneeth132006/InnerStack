@@ -69,6 +69,11 @@ const isRestrictedDay = (habit, dateStr) => {
 export function HabitProvider({ children }) {
     const { user } = useAuth();
     const [habits, setHabits] = useState([]);
+    const [userStats, setUserStats] = useState({
+        points: 500, // Starting balance
+        restDayTokens: 0,
+        earnedBadges: [],
+    });
     const [loading, setLoading] = useState(true);
     const firebaseEnabled = isFirebaseConfigured();
 
@@ -86,6 +91,10 @@ export function HabitProvider({ children }) {
                 setHabits(data);
                 setLoading(false);
             });
+            // Mocking stats fetch - in real app would be from DB
+            const savedStats = localStorage.getItem(`innerstack-stats-${user.uid}`);
+            if (savedStats) setUserStats(JSON.parse(savedStats));
+
             return () => {
                 unsubHabits();
             };
@@ -94,6 +103,8 @@ export function HabitProvider({ children }) {
             try {
                 const savedHabits = localStorage.getItem(`innerstack-habits-${user.uid}`);
                 setHabits(savedHabits ? JSON.parse(savedHabits) : []);
+                const savedStats = localStorage.getItem(`innerstack-stats-${user.uid}`);
+                if (savedStats) setUserStats(JSON.parse(savedStats));
             } catch (err) {
                 console.error("Error loading offline data:", err);
                 setHabits([]);
@@ -102,99 +113,22 @@ export function HabitProvider({ children }) {
         }
     }, [user, firebaseEnabled]);
 
-    // Persist to localStorage in offline mode
+    // Persist to localStorage
     useEffect(() => {
-        if (!firebaseEnabled && user) {
-            localStorage.setItem(`innerstack-habits-${user.uid}`, JSON.stringify(habits));
-        }
-    }, [habits, user, firebaseEnabled]);
-
-    const addHabit = useCallback(async (habit) => {
-        const newHabit = {
-            name: habit.name,
-            description: habit.description || "",
-            icon: habit.icon || "🎯",
-            frequency: habit.frequency || "daily",
-            customDays: habit.customDays || [],
-            targetCount: habit.targetCount || 1,
-            targetDate: habit.targetDate || null,
-            chainFromId: habit.chainFromId || null,
-            category: habit.category || "general",
-            repeatInterval: habit.repeatInterval || 1,
-            endsOption: habit.endsOption || "never",
-            endsDate: habit.endsDate || null,
-            endsAfterCount: habit.endsAfterCount || 0,
-            restDaysPerWeek: habit.restDaysPerWeek || 0,
-            isChallenge: habit.frequency === "challenge",
-            duration: habit.duration || null,
-            badgeAwarded: false,
-            history: {},
-        };
-
-        if (firebaseEnabled && user) {
-            await addHabitToDb(user.uid, newHabit);
-        } else {
-            const localHabit = {
-                ...newHabit,
-                id: Date.now().toString(),
-                createdAt: Date.now(),
-            };
-            setHabits((prev) => [...prev, localHabit]);
-        }
-    }, [firebaseEnabled, user]);
-
-    const updateHabit = useCallback(async (id, updates) => {
-        if (firebaseEnabled && user) {
-            await updateHabitInDb(user.uid, id, updates);
-        } else {
-            setHabits((prev) =>
-                prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
-            );
-        }
-    }, [firebaseEnabled, user]);
-
-    const deleteHabit = useCallback(async (id) => {
-        if (firebaseEnabled && user) {
-            await deleteHabitFromDb(user.uid, id);
-        } else {
-            setHabits((prev) => prev.filter((h) => h.id !== id));
-        }
-    }, [firebaseEnabled, user]);
-
-    const toggleHabitCompletion = useCallback(async (id, date = getToday()) => {
-        const habit = habits.find((h) => h.id === id);
-        if (!habit) return;
-
-        const newHistory = { ...(habit.history || {}) };
-        if (newHistory[date]) {
-            delete newHistory[date];
-        } else {
-            newHistory[date] = true;
-        }
-
-        // Challenge completion logic
-        let updates = { history: newHistory };
-        if (habit.frequency === "challenge" && !habit.badgeAwarded) {
-            const totalCompletions = Object.values(newHistory).filter(Boolean).length;
-            if (totalCompletions >= (habit.duration || 7)) {
-                updates.badgeAwarded = true;
+        if (user) {
+            if (!firebaseEnabled) {
+                localStorage.setItem(`innerstack-habits-${user.uid}`, JSON.stringify(habits));
             }
+            localStorage.setItem(`innerstack-stats-${user.uid}`, JSON.stringify(userStats));
         }
+    }, [habits, userStats, user, firebaseEnabled]);
 
-        if (firebaseEnabled && user) {
-            await updateHabitInDb(user.uid, id, updates);
-        } else {
-            setHabits((prev) =>
-                prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
-            );
-        }
-    }, [habits, firebaseEnabled, user]);
-
-    const getHabitsForDate = useCallback((dateStr) => {
-        return habits.filter((h) => isHabitDueOnDate(h, dateStr));
-    }, [habits]);
-
-    const getTodaysHabits = useCallback(() => getHabitsForDate(getToday()), [getHabitsForDate]);
+    const awardBadge = useCallback((badgeName) => {
+        setUserStats(prev => {
+            if (prev.earnedBadges.includes(badgeName)) return prev;
+            return { ...prev, earnedBadges: [...prev.earnedBadges, badgeName] };
+        });
+    }, []);
 
     const getStreak = useCallback((habitId) => {
         const habit = habits.find((h) => h.id === habitId);
@@ -242,6 +176,146 @@ export function HabitProvider({ children }) {
         return streak;
     }, [habits]);
 
+    const getHabitsForDate = useCallback((dateStr) => {
+        return habits.filter((h) => isHabitDueOnDate(h, dateStr));
+    }, [habits]);
+
+    const getTodaysHabits = useCallback(() => getHabitsForDate(getToday()), [getHabitsForDate]);
+
+
+
+
+    const addHabit = useCallback(async (habit) => {
+        const newHabit = {
+            name: habit.name,
+            description: habit.description || "",
+            icon: habit.icon || "🎯",
+            frequency: habit.frequency || "daily",
+            customDays: habit.customDays || [],
+            targetCount: habit.targetCount || 1,
+            targetDate: habit.targetDate || null,
+            chainFromId: habit.chainFromId || null,
+            category: habit.category || "general",
+            repeatInterval: habit.repeatInterval || 1,
+            endsOption: habit.endsOption || "never",
+            endsDate: habit.endsDate || null,
+            endsAfterCount: habit.endsAfterCount || 0,
+            restDaysPerWeek: habit.restDaysPerWeek || 0,
+            isChallenge: habit.frequency === "challenge",
+            duration: habit.duration || null,
+            badgeAwarded: false,
+            bet: habit.bet || null, // { stake, deadline, resolved: false, won: false }
+            history: {},
+        };
+
+        // Deduct stake if bet placed
+        if (habit.bet && habit.bet.stake > 0) {
+            setUserStats(prev => ({ ...prev, points: prev.points - habit.bet.stake }));
+        }
+
+        if (firebaseEnabled && user) {
+            await addHabitToDb(user.uid, newHabit);
+        } else {
+            const localHabit = {
+                ...newHabit,
+                id: Date.now().toString(),
+                createdAt: Date.now(),
+            };
+            setHabits((prev) => [...prev, localHabit]);
+        }
+
+        // Award first habit badge
+        if (habits.length === 0) {
+            awardBadge("Genesis");
+        }
+    }, [firebaseEnabled, user, habits.length, awardBadge]);
+
+    const updateHabit = useCallback(async (id, updates) => {
+        if (firebaseEnabled && user) {
+            await updateHabitInDb(user.uid, id, updates);
+        } else {
+            setHabits((prev) =>
+                prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
+            );
+        }
+    }, [firebaseEnabled, user]);
+
+    const deleteHabit = useCallback(async (id) => {
+        if (firebaseEnabled && user) {
+            await deleteHabitFromDb(user.uid, id);
+        } else {
+            setHabits((prev) => prev.filter((h) => h.id !== id));
+        }
+    }, [firebaseEnabled, user]);
+
+    const toggleHabitCompletion = useCallback(async (id, date = getToday()) => {
+        const habit = habits.find((h) => h.id === id);
+        if (!habit) return;
+
+        const isMarkingComplete = !habit.history?.[date];
+        const newHistory = { ...(habit.history || {}) };
+        if (newHistory[date]) {
+            delete newHistory[date];
+        } else {
+            newHistory[date] = true;
+        }
+
+        let habitUpdates = { history: newHistory };
+        let pointsEarned = 0;
+        let tokensEarned = 0;
+
+        if (isMarkingComplete) {
+            // Points for regular completion
+            pointsEarned += 10;
+
+            // Challenge completion logic
+            if (habit.frequency === "challenge" && !habit.badgeAwarded) {
+                const totalCompletions = Object.values(newHistory).filter(Boolean).length;
+                if (totalCompletions >= (habit.duration || 7)) {
+                    habitUpdates.badgeAwarded = true;
+                    pointsEarned += 100;
+                    awardBadge(habit.duration >= 30 ? "Elite Challenger" : "Challenge Completed");
+                }
+            }
+
+            // Bet resolution logic
+            if (habit.bet && !habit.bet.resolved) {
+                const now = new Date();
+                const deadline = new Date(habit.bet.deadline);
+                if (now <= deadline) {
+                    habitUpdates.bet = { ...habit.bet, resolved: true, won: true };
+                    pointsEarned += habit.bet.stake * 2;
+                    tokensEarned += 1;
+                    awardBadge("Winner");
+                }
+            }
+        }
+
+        if (pointsEarned > 0 || tokensEarned > 0) {
+            setUserStats(prev => ({
+                ...prev,
+                points: prev.points + pointsEarned,
+                restDayTokens: prev.restDayTokens + tokensEarned
+            }));
+        }
+
+        if (firebaseEnabled && user) {
+            await updateHabitInDb(user.uid, id, habitUpdates);
+        } else {
+            setHabits((prev) =>
+                prev.map((h) => (h.id === id ? { ...h, ...habitUpdates } : h))
+            );
+        }
+
+        // Streak badges
+        const currentStreak = getStreak(id);
+        if (currentStreak >= 30) awardBadge("Unstoppable");
+        else if (currentStreak >= 7) awardBadge("Consistent");
+    }, [habits, firebaseEnabled, user, awardBadge, getStreak]);
+
+
+
+
     const getChainedHabits = useCallback((habitId) => {
         return habits.filter((h) => h.chainFromId === habitId);
     }, [habits]);
@@ -278,8 +352,11 @@ export function HabitProvider({ children }) {
         return dates;
     }, [habits]);
 
+
+
     const value = {
         habits,
+        userStats,
         loading,
         addHabit,
         updateHabit,
@@ -292,6 +369,7 @@ export function HabitProvider({ children }) {
         getAffectedByBreak,
         getAllCompletionDates,
         isRestrictedDay,
+        awardBadge,
     };
 
     return (
