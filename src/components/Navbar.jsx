@@ -1,6 +1,6 @@
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "./ui/button"
-import { LayoutDashboard, User, LogOut, Settings } from "lucide-react"
+import { LayoutDashboard, User, LogOut, Settings, Globe } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -33,6 +33,15 @@ export function Navbar({ user, onLogout, currentPage, onNavigate }) {
                             >
                                 <LayoutDashboard className="h-4 w-4" />
                                 Dashboard
+                            </Button>
+                            <Button
+                                variant={currentPage === "social" ? "secondary" : "ghost"}
+                                size="sm"
+                                onClick={() => onNavigate?.("social")}
+                                className="gap-2"
+                            >
+                                <Globe className="h-4 w-4" />
+                                Social
                             </Button>
                         </div>
                     )}
@@ -74,6 +83,10 @@ export function Navbar({ user, onLogout, currentPage, onNavigate }) {
                                         <LayoutDashboard className="mr-2 h-4 w-4" />
                                         <span>Dashboard</span>
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onNavigate?.("social")}>
+                                        <Globe className="mr-2 h-4 w-4" />
+                                        <span>Social Hub</span>
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <Settings className="mr-2 h-4 w-4" />
                                         <span>Settings</span>
@@ -91,6 +104,6 @@ export function Navbar({ user, onLogout, currentPage, onNavigate }) {
                     </div>
                 </div>
             </div>
-        </nav>
+        </nav >
     )
 }

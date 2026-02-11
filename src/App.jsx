@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/Dashboard"
 import { ProfilePage } from "@/components/ProfilePage"
 import { AuthPage } from "@/components/AuthPage"
 import { ErrorPage } from "@/components/ErrorPage"
+import { SocialPage } from "@/components/SocialPage"
 import { useState, useEffect } from "react"
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
     const path = window.location.pathname
     if (path === "/auth") setPage("auth")
     else if (path === "/profile") setPage("profile")
+    else if (path === "/social") setPage("social")
     else if (path === "/404") setPage("error")
     else if (path !== "/" && path !== "/dashboard") {
       // Optional: Redirect unknown paths to error page?
@@ -51,6 +53,7 @@ function App() {
     if (page === "error") return <ErrorPage onNavigate={navigate} />
     if (!user) return <Hero onNavigate={navigate} />
     if (page === "profile") return <ProfilePage user={user} onLogout={handleLogout} />
+    if (page === "social") return <SocialPage user={user} />
     return <Dashboard user={user} />
   }
 

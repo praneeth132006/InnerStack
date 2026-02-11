@@ -147,7 +147,12 @@ export function AddHabitDialog() {
                     <DialogDescription>
                         {step === 1 && "What habit do you want to build?"}
                         {step === 2 && "How often will you do this?"}
-                        {step === 3 && "Stake points to stay committed."}
+                        {step === 3 && (
+                            <div className="flex flex-col gap-1">
+                                <span>Optional: Stake points to stay committed.</span>
+                                <span className="text-xs text-muted-foreground font-normal">You can skip this step if you don't want to bet.</span>
+                            </div>
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -376,19 +381,29 @@ export function AddHabitDialog() {
                     </div>
                 )}
 
-                <DialogFooter>
-                    {step > 1 && (
-                        <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
+                <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
+                    {step > 1 ? (
+                        <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
                             Back
                         </Button>
-                    )}
-                    {step < 3 ? (
-                        <Button onClick={() => setStep((s) => s + 1)} disabled={step === 1 && !name.trim()}>
-                            Next
-                        </Button>
                     ) : (
-                        <Button onClick={handleSubmit}>Create Habit</Button>
+                        <div /> // Spacer
                     )}
+
+                    <div className="flex gap-2">
+                        {step === 3 && (
+                            <Button variant="secondary" onClick={() => { setBetStake(0); handleSubmit(); }}>
+                                Skip & Create
+                            </Button>
+                        )}
+                        {step < 3 ? (
+                            <Button onClick={() => setStep((s) => s + 1)} disabled={step === 1 && !name.trim()}>
+                                Next
+                            </Button>
+                        ) : (
+                            <Button onClick={handleSubmit}>Create with Bet</Button>
+                        )}
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
