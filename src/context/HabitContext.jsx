@@ -6,8 +6,6 @@ import {
     addHabit as addHabitToDb,
     updateHabit as updateHabitInDb,
     deleteHabitFromDb,
-    subscribeToDailyLogs,
-    saveDailyLog,
 } from "@/lib/databaseService";
 import { formatDateLocal } from "@/lib/utils";
 
@@ -21,7 +19,31 @@ const getDayOfWeek = (dateStr) => {
 };
 
 const isHabitDueOnDate = (habit, dateStr) => {
+    // 1. Check if habit has ended
+    if (habit.endsOption === "on" && habit.endsDate && dateStr > habit.endsDate) return false;
+    if (habit.endsOption === "after" && habit.endsAfterCount) {
+        const completions = Object.values(habit.history || {}).filter(Boolean).length;
+        if (completions >= habit.endsAfterCount && !habit.history?.[dateStr]) return false;
+    }
+
+    // 2. Check if habit is in a repeat interval week (for custom/daily/weekly)
+    if (habit.repeatInterval && habit.repeatInterval > 1 && habit.createdAt) {
+        const start = new Date(habit.createdAt);
+        start.setHours(0, 0, 0, 0);
+        const current = new Date(dateStr);
+        current.setHours(0, 0, 0, 0);
+
+        // Calculate weeks since creation
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const diffDays = Math.floor((current - start) / msPerDay);
+        const weeksSince = Math.floor(diffDays / 7);
+
+        if (weeksSince % habit.repeatInterval !== 0) return false;
+    }
+
+    // 3. Check frequency specific logic
     if (habit.frequency === "daily") return true;
+    if (habit.frequency === "rest-day") return true; // Act like daily, streak logic handles the rest
     if (habit.frequency === "one-time") {
         return habit.targetDate === dateStr && !habit.history?.[dateStr];
     }
@@ -33,10 +55,21 @@ const isHabitDueOnDate = (habit, dateStr) => {
     return false;
 };
 
+const isRestrictedDay = (habit, dateStr) => {
+    // A restricted day is one where the habit is NOT due according to its frequency settings
+    // But we still allow viewing/logging with confirmation
+    if (habit.frequency === "daily" || habit.frequency === "rest-day" || habit.frequency === "weekly") return false;
+    if (habit.frequency === "one-time") return habit.targetDate !== dateStr;
+    if (habit.frequency === "custom") {
+        const isDue = isHabitDueOnDate(habit, dateStr);
+        return !isDue;
+    }
+    return false;
+};
+
 export function HabitProvider({ children }) {
     const { user } = useAuth();
     const [habits, setHabits] = useState([]);
-    const [dailyLogs, setDailyLogs] = useState({});
     const [loading, setLoading] = useState(true);
     const firebaseEnabled = isFirebaseConfigured();
 
@@ -44,7 +77,6 @@ export function HabitProvider({ children }) {
     useEffect(() => {
         if (!user) {
             setHabits([]);
-            setDailyLogs({});
             setLoading(false);
             return;
         }
@@ -55,22 +87,17 @@ export function HabitProvider({ children }) {
                 setHabits(data);
                 setLoading(false);
             });
-            const unsubLogs = subscribeToDailyLogs(user.uid, setDailyLogs);
             return () => {
                 unsubHabits();
-                unsubLogs();
             };
         } else {
             // Offline mode - use localStorage
             try {
                 const savedHabits = localStorage.getItem(`innerstack-habits-${user.uid}`);
-                const savedLogs = localStorage.getItem(`innerstack-logs-${user.uid}`);
                 setHabits(savedHabits ? JSON.parse(savedHabits) : []);
-                setDailyLogs(savedLogs ? JSON.parse(savedLogs) : {});
             } catch (err) {
                 console.error("Error loading offline data:", err);
                 setHabits([]);
-                setDailyLogs({});
             }
             setLoading(false);
         }
@@ -83,12 +110,6 @@ export function HabitProvider({ children }) {
         }
     }, [habits, user, firebaseEnabled]);
 
-    useEffect(() => {
-        if (!firebaseEnabled && user) {
-            localStorage.setItem(`innerstack-logs-${user.uid}`, JSON.stringify(dailyLogs));
-        }
-    }, [dailyLogs, user, firebaseEnabled]);
-
     const addHabit = useCallback(async (habit) => {
         const newHabit = {
             name: habit.name,
@@ -100,6 +121,11 @@ export function HabitProvider({ children }) {
             targetDate: habit.targetDate || null,
             chainFromId: habit.chainFromId || null,
             category: habit.category || "general",
+            repeatInterval: habit.repeatInterval || 1,
+            endsOption: habit.endsOption || "never",
+            endsDate: habit.endsDate || null,
+            endsAfterCount: habit.endsAfterCount || 0,
+            restDaysPerWeek: habit.restDaysPerWeek || 0,
             history: {},
         };
 
@@ -165,18 +191,41 @@ export function HabitProvider({ children }) {
 
         let streak = 0;
         let date = new Date();
+        let missesInCurrentWeek = 0;
+        let daysInCurrentWindow = 0;
 
         for (let i = 0; i < 365; i++) {
             const dateStr = formatDateLocal(date);
-            if (!isHabitDueOnDate(habit, dateStr)) {
+            const isDue = isHabitDueOnDate(habit, dateStr);
+
+            if (!isDue) {
                 date.setDate(date.getDate() - 1);
                 continue;
             }
+
             if (habit.history?.[dateStr]) {
                 streak++;
+                daysInCurrentWindow++;
                 date.setDate(date.getDate() - 1);
             } else {
+                // Handle Rest Day logic: allow 1 miss per 7 due-days window
+                if (habit.frequency === "rest-day" && missesInCurrentWeek < (habit.restDaysPerWeek || 1)) {
+                    missesInCurrentWeek++;
+                    daysInCurrentWindow++;
+                    date.setDate(date.getDate() - 1);
+                    // Reset week counter every 7 check-points
+                    if (daysInCurrentWindow >= 7) {
+                        missesInCurrentWeek = 0;
+                        daysInCurrentWindow = 0;
+                    }
+                    continue;
+                }
                 break;
+            }
+
+            if (daysInCurrentWindow >= 7) {
+                missesInCurrentWeek = 0;
+                daysInCurrentWindow = 0;
             }
         }
         return streak;
@@ -202,18 +251,7 @@ export function HabitProvider({ children }) {
         return affected;
     }, [habits]);
 
-    const logDailyStats = useCallback(async (date, stats) => {
-        if (firebaseEnabled && user) {
-            await saveDailyLog(user.uid, date, stats);
-        } else {
-            setDailyLogs((prev) => ({
-                ...prev,
-                [date]: { ...prev[date], ...stats, date },
-            }));
-        }
-    }, [firebaseEnabled, user]);
-
-    const getDailyLog = useCallback((date) => dailyLogs[date] || null, [dailyLogs]);
+    const getDailyLog = useCallback((date) => null, []); // Placeholder removed logic
 
     const getAllCompletionDates = useCallback(() => {
         const dates = {};
@@ -231,7 +269,6 @@ export function HabitProvider({ children }) {
 
     const value = {
         habits,
-        dailyLogs,
         loading,
         addHabit,
         updateHabit,
@@ -242,9 +279,8 @@ export function HabitProvider({ children }) {
         getStreak,
         getChainedHabits,
         getAffectedByBreak,
-        logDailyStats,
-        getDailyLog,
         getAllCompletionDates,
+        isRestrictedDay,
     };
 
     return (

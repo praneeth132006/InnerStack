@@ -60,7 +60,7 @@ const PRICING = [
             "Advanced analytics",
             "Unlimited history",
             "Habit chains",
-            "Mood tracking",
+            "Habit ecosystem",
             "Priority support",
         ],
         cta: "Go Pro",
@@ -97,7 +97,7 @@ const TESTIMONIALS = [
     {
         name: "Emily Rodriguez",
         role: "Fitness Coach",
-        content: "I recommend InnerStack to all my clients. The mood tracking feature is a game-changer.",
+        content: "I recommend InnerStack to all my clients. The habit ecosystem feature is a game-changer.",
         avatar: "ER",
     },
 ];

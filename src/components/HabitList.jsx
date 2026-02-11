@@ -2,17 +2,51 @@ import { useState } from "react";
 import { useHabits } from "@/context/HabitContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link2, Flame } from "lucide-react";
+import { Link2, Flame, AlertCircle } from "lucide-react";
 import { TaskDetailDialog } from "./TaskDetailDialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function HabitList({ habits, date }) {
-    const { toggleHabitCompletion, getStreak, getAffectedByBreak, habits: allHabits } = useHabits();
+    const { toggleHabitCompletion, getStreak, getAffectedByBreak, habits: allHabits, isRestrictedDay } = useHabits();
     const [selectedHabit, setSelectedHabit] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [pendingToggle, setPendingToggle] = useState(null);
 
     // Get parent habit name for chained habits
     const getParentHabitName = (chainFromId) => {
         const parent = allHabits.find(h => h.id === chainFromId);
         return parent ? parent.name : null;
+    };
+
+    const handleToggle = (habitId, dateStr) => {
+        const habit = habits.find(h => h.id === habitId);
+        if (!habit) return;
+
+        const isCompleted = habit.history && habit.history[dateStr];
+
+        // Only show confirmation when checking (logging), not when unchecking
+        if (!isCompleted && isRestrictedDay(habit, dateStr)) {
+            setPendingToggle({ id: habitId, date: dateStr });
+            setConfirmOpen(true);
+        } else {
+            toggleHabitCompletion(habitId, dateStr);
+        }
+    };
+
+    const confirmToggle = () => {
+        if (pendingToggle) {
+            toggleHabitCompletion(pendingToggle.id, pendingToggle.date);
+            setPendingToggle(null);
+        }
+        setConfirmOpen(false);
     };
 
     if (habits.length === 0) {
@@ -42,7 +76,7 @@ export function HabitList({ habits, date }) {
                             <div onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
                                     checked={isCompleted}
-                                    onCheckedChange={() => toggleHabitCompletion(habit.id, date)}
+                                    onCheckedChange={() => handleToggle(habit.id, date)}
                                     className="w-6 h-6 rounded-full data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground border-muted-foreground/50 transition-all"
                                 />
                             </div>
@@ -85,6 +119,25 @@ export function HabitList({ habits, date }) {
                     </Card>
                 );
             })}
+
+            {/* Confirmation Dialog for Restricted Day Logging */}
+            <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-amber-500" />
+                            Unscheduled Logging
+                        </DialogTitle>
+                        <DialogDescription className="pt-2 text-foreground">
+                            You did not fix the frequency for this day. Are you sure you still want to log the activity?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="ghost" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                        <Button variant="default" onClick={confirmToggle}>Confirm Log</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <TaskDetailDialog
                 habit={selectedHabit}

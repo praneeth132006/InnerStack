@@ -22,11 +22,13 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, CalendarIcon } from "lucide-react";
+import { Plus, CalendarIcon, Repeat, CalendarDays, Coffee, Target, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDateLocal } from "@/lib/utils";
 
 const ICONS = ["🎯", "💪", "📚", "🏃", "🧘", "💧", "🍎", "😴", "✍️", "🎨", "💻", "🎸"];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export function AddHabitDialog() {
     const { habits, addHabit } = useHabits();
@@ -41,6 +43,11 @@ export function AddHabitDialog() {
     const [targetCount, setTargetCount] = useState(3);
     const [targetDate, setTargetDate] = useState(null);
     const [category, setCategory] = useState("general");
+    const [repeatInterval, setRepeatInterval] = useState(1);
+    const [endsOption, setEndsOption] = useState("never");
+    const [endsDate, setEndsDate] = useState(null);
+    const [endsAfterCount, setEndsAfterCount] = useState(4);
+    const [restDaysPerWeek, setRestDaysPerWeek] = useState(1);
 
     const resetForm = () => {
         setStep(1);
@@ -51,8 +58,12 @@ export function AddHabitDialog() {
         setCustomDays([]);
         setTargetCount(3);
         setTargetDate(null);
-        setTargetDate(null);
         setCategory(category);
+        setRepeatInterval(1);
+        setEndsOption("never");
+        setEndsDate(null);
+        setEndsAfterCount(4);
+        setRestDaysPerWeek(1);
     };
 
     const handleSubmit = () => {
@@ -66,6 +77,11 @@ export function AddHabitDialog() {
             targetCount,
             targetDate: targetDate ? formatDateLocal(targetDate) : null,
             category,
+            repeatInterval,
+            endsOption,
+            endsDate: endsDate ? formatDateLocal(endsDate) : null,
+            endsAfterCount,
+            restDaysPerWeek: frequency === "rest-day" ? restDaysPerWeek : 0,
         });
         resetForm();
         setOpen(false);
@@ -79,6 +95,44 @@ export function AddHabitDialog() {
         );
     };
 
+    const FREQUENCY_OPTIONS = [
+        {
+            value: "daily",
+            label: "Daily",
+            description: "Every single day",
+            icon: Repeat,
+            color: "text-blue-500",
+        },
+        {
+            value: "weekly",
+            label: "Weekly",
+            description: "A set number of times per week",
+            icon: CalendarDays,
+            color: "text-violet-500",
+        },
+        {
+            value: "custom",
+            label: "Custom Days",
+            description: "e.g., Mon, Wed, Fri",
+            icon: Settings2,
+            color: "text-emerald-500",
+        },
+        {
+            value: "rest-day",
+            label: "Rest Day",
+            description: "1 random rest day per week — streak preserved",
+            icon: Coffee,
+            color: "text-amber-500",
+        },
+        {
+            value: "one-time",
+            label: "One-time",
+            description: "A single goal on a specific date",
+            icon: Target,
+            color: "text-rose-500",
+        },
+    ];
+
     return (
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
             <DialogTrigger asChild>
@@ -86,7 +140,7 @@ export function AddHabitDialog() {
                     <Plus className="h-5 w-5" /> Add Habit
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>
                         {step === 1 && "New Habit"}
@@ -157,42 +211,43 @@ export function AddHabitDialog() {
 
                 {step === 2 && (
                     <div className="grid gap-4 py-4">
-                        <RadioGroup value={frequency} onValueChange={setFrequency} className="grid gap-3">
-                            <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                                <RadioGroupItem value="daily" id="daily" />
-                                <Label htmlFor="daily" className="flex-1 cursor-pointer">
-                                    <span className="font-medium">Daily</span>
-                                    <p className="text-sm text-muted-foreground">Every single day</p>
-                                </Label>
-                            </div>
-                            <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                                <RadioGroupItem value="weekly" id="weekly" />
-                                <Label htmlFor="weekly" className="flex-1 cursor-pointer">
-                                    <span className="font-medium">Weekly</span>
-                                    <p className="text-sm text-muted-foreground">A set number of times per week</p>
-                                </Label>
-                            </div>
-                            <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                                <RadioGroupItem value="custom" id="custom" />
-                                <Label htmlFor="custom" className="flex-1 cursor-pointer">
-                                    <span className="font-medium">Custom Days</span>
-                                    <p className="text-sm text-muted-foreground">e.g., Mon, Wed, Fri</p>
-                                </Label>
-                            </div>
-                            <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                                <RadioGroupItem value="one-time" id="one-time" />
-                                <Label htmlFor="one-time" className="flex-1 cursor-pointer">
-                                    <span className="font-medium">One-time</span>
-                                    <p className="text-sm text-muted-foreground">A single goal on a specific date</p>
-                                </Label>
-                            </div>
+                        {/* Frequency options as styled cards */}
+                        <RadioGroup value={frequency} onValueChange={setFrequency} className="grid gap-2.5">
+                            {FREQUENCY_OPTIONS.map((opt) => {
+                                const Icon = opt.icon;
+                                return (
+                                    <label
+                                        key={opt.value}
+                                        htmlFor={`freq-${opt.value}`}
+                                        className={cn(
+                                            "flex items-center gap-3.5 rounded-xl border-2 p-3.5 cursor-pointer transition-all",
+                                            frequency === opt.value
+                                                ? "border-primary bg-primary/5 shadow-sm"
+                                                : "border-border hover:bg-muted/50 hover:border-muted-foreground/30"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "flex items-center justify-center w-9 h-9 rounded-lg shrink-0",
+                                            frequency === opt.value ? "bg-primary/15" : "bg-muted"
+                                        )}>
+                                            <Icon className={cn("h-4.5 w-4.5", opt.color)} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <span className="font-medium text-sm">{opt.label}</span>
+                                            <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+                                        </div>
+                                        <RadioGroupItem value={opt.value} id={`freq-${opt.value}`} className="shrink-0" />
+                                    </label>
+                                );
+                            })}
                         </RadioGroup>
 
+                        {/* Weekly: times per week */}
                         {frequency === "weekly" && (
-                            <div className="grid gap-2 mt-2">
-                                <Label>Times per week</Label>
+                            <div className="grid gap-2 mt-1 p-3 rounded-lg bg-muted/30 border">
+                                <Label className="text-xs text-muted-foreground">Times per week</Label>
                                 <Select value={String(targetCount)} onValueChange={(v) => setTargetCount(Number(v))}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-9">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -204,35 +259,114 @@ export function AddHabitDialog() {
                             </div>
                         )}
 
+                        {/* Custom Days: full options */}
                         {frequency === "custom" && (
-                            <div className="grid gap-2 mt-2">
-                                <Label>Select Days</Label>
-                                <div className="flex gap-2 flex-wrap">
-                                    {DAYS.map((day, idx) => (
-                                        <button
-                                            key={day}
-                                            type="button"
-                                            onClick={() => toggleCustomDay(idx)}
-                                            className={cn(
-                                                "px-3 py-2 rounded-lg border text-sm font-medium transition-all",
-                                                customDays.includes(idx)
-                                                    ? "bg-primary text-primary-foreground border-primary"
-                                                    : "border-input hover:bg-muted"
+                            <div className="space-y-4 mt-1 p-3.5 rounded-lg bg-muted/30 border">
+                                {/* Repeat interval */}
+                                <div className="flex items-center gap-2">
+                                    <Label className="text-xs text-muted-foreground whitespace-nowrap">Every</Label>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={12}
+                                        value={repeatInterval}
+                                        onChange={(e) => setRepeatInterval(Math.max(1, Number(e.target.value)))}
+                                        className="w-16 h-8 text-center text-sm"
+                                    />
+                                    <Label className="text-xs text-muted-foreground">week(s)</Label>
+                                </div>
+
+                                {/* Day of week chips */}
+                                <div>
+                                    <Label className="text-xs text-muted-foreground mb-2 block">Repeat on</Label>
+                                    <div className="flex gap-1.5">
+                                        {DAYS.map((day, idx) => (
+                                            <button
+                                                key={day}
+                                                type="button"
+                                                onClick={() => toggleCustomDay(idx)}
+                                                className={cn(
+                                                    "w-9 h-9 rounded-full text-xs font-semibold transition-all flex items-center justify-center",
+                                                    customDays.includes(idx)
+                                                        ? "bg-primary text-primary-foreground shadow-md"
+                                                        : "bg-background border border-input text-muted-foreground hover:bg-muted"
+                                                )}
+                                            >
+                                                {DAY_LETTERS[idx]}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Ends option */}
+                                <div>
+                                    <Label className="text-xs text-muted-foreground mb-2 block">Ends</Label>
+                                    <RadioGroup value={endsOption} onValueChange={setEndsOption} className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <RadioGroupItem value="never" id="ends-never" />
+                                            <Label htmlFor="ends-never" className="text-sm cursor-pointer">Never</Label>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <RadioGroupItem value="on" id="ends-on" />
+                                            <Label htmlFor="ends-on" className="text-sm cursor-pointer">On</Label>
+                                            {endsOption === "on" && (
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button variant="outline" size="sm" className={cn("h-8 text-xs", !endsDate && "text-muted-foreground")}>
+                                                            <CalendarIcon className="mr-1.5 h-3 w-3" />
+                                                            {endsDate ? endsDate.toLocaleDateString() : "Pick date"}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0">
+                                                        <Calendar mode="single" selected={endsDate} onSelect={setEndsDate} initialFocus />
+                                                    </PopoverContent>
+                                                </Popover>
                                             )}
-                                        >
-                                            {day}
-                                        </button>
-                                    ))}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <RadioGroupItem value="after" id="ends-after" />
+                                            <Label htmlFor="ends-after" className="text-sm cursor-pointer">After</Label>
+                                            {endsOption === "after" && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <Input
+                                                        type="number"
+                                                        min={1}
+                                                        max={999}
+                                                        value={endsAfterCount}
+                                                        onChange={(e) => setEndsAfterCount(Math.max(1, Number(e.target.value)))}
+                                                        className="w-16 h-8 text-center text-sm"
+                                                    />
+                                                    <span className="text-xs text-muted-foreground">times</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </RadioGroup>
                                 </div>
                             </div>
                         )}
 
+                        {/* Rest Day: explanation */}
+                        {frequency === "rest-day" && (
+                            <div className="p-3.5 rounded-lg bg-amber-500/5 border border-amber-500/20 mt-1">
+                                <div className="flex items-start gap-2.5">
+                                    <Coffee className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                                    <div className="space-y-1.5">
+                                        <p className="text-sm text-foreground font-medium">Rest Day Mode</p>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            This habit works like a daily habit, but you're allowed <strong>1 random rest day per week</strong> without breaking your streak. Perfect for exercise or intense study routines.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* One-time: target date */}
                         {frequency === "one-time" && (
-                            <div className="grid gap-2 mt-2">
-                                <Label>Target Date</Label>
+                            <div className="grid gap-2 mt-1 p-3 rounded-lg bg-muted/30 border">
+                                <Label className="text-xs text-muted-foreground">Target Date</Label>
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button variant="outline" className={cn("justify-start text-left font-normal", !targetDate && "text-muted-foreground")}>
+                                        <Button variant="outline" className={cn("justify-start text-left font-normal h-9", !targetDate && "text-muted-foreground")}>
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {targetDate ? targetDate.toLocaleDateString() : "Pick a date"}
                                         </Button>

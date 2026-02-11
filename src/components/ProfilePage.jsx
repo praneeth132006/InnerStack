@@ -134,10 +134,169 @@ export function ProfilePage({ user, onLogout }) {
 
                     {/* Help Tab */}
                     <TabsContent value="help" className="space-y-4">
+                        {/* Habit Ecosystem Guide */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Frequently Asked Questions</CardTitle>
-                                <CardDescription>Find answers to common questions about InnerStack.</CardDescription>
+                                <CardTitle className="flex items-center gap-2">
+                                    <span className="text-xl">🌿</span> Spatial Habit Ecosystem
+                                </CardTitle>
+                                <CardDescription>
+                                    Learn how your habits come to life as Digital Artifacts on your dashboard.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Accordion type="single" collapsible className="w-full">
+                                    <AccordionItem value="eco-1">
+                                        <AccordionTrigger>What is the Habit Ecosystem?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>
+                                                The <strong className="text-foreground">Spatial Habit Ecosystem</strong> is a visual dashboard feature that transforms your habit tracking into a living, breathing work of generative art.
+                                            </p>
+                                            <p>
+                                                Instead of boring lists and charts, each of your <strong className="text-foreground">habit categories</strong> is represented by a unique <strong className="text-foreground">Digital Artifact</strong> — a glowing, animated shape that grows, changes color, and pulses based on how consistently you complete your habits.
+                                            </p>
+                                            <p>
+                                                The more consistent you are, the more alive your ecosystem becomes — with brighter artifacts, denser particle effects, and higher vitality scores.
+                                            </p>
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    <AccordionItem value="eco-2">
+                                        <AccordionTrigger>What are the Digital Artifacts?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>Each habit category has its own unique artifact shape and color palette:</p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="text-lg">💎</span>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-foreground">Vitality Crystal</p>
+                                                        <p className="text-xs">Health & Fitness — green crystal</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="text-lg">🪷</span>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-foreground">Zen Lotus</p>
+                                                        <p className="text-xs">Mindfulness — purple flower</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="text-lg">🗿</span>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-foreground">Focus Monolith</p>
+                                                        <p className="text-xs">Productivity — blue tower</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="text-lg">⭐</span>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-foreground">Knowledge Star</p>
+                                                        <p className="text-xs">Learning — amber star</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="text-lg">💗</span>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-foreground">Bond Heart</p>
+                                                        <p className="text-xs">Social — pink heart</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="text-lg">✨</span>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-foreground">Prism Gem</p>
+                                                        <p className="text-xs">General — silver diamond</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    <AccordionItem value="eco-3">
+                                        <AccordionTrigger>How do artifacts grow?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>
+                                                Each artifact goes through <strong className="text-foreground">5 growth stages</strong> based on your 30-day consistency percentage for that category:
+                                            </p>
+                                            <div className="space-y-1.5 mt-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-zinc-600" />
+                                                    <span><strong className="text-foreground">Dormant</strong> — No habits in this category yet (faded outline only)</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-red-400" />
+                                                    <span><strong className="text-foreground">Seedling</strong> — Below 20% consistency (just starting to form)</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-orange-400" />
+                                                    <span><strong className="text-foreground">Budding</strong> — 20–49% consistency (taking shape, faint glow)</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                                                    <span><strong className="text-foreground">Growing</strong> — 50–79% consistency (vibrant colors, clear glow)</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                                                    <span><strong className="text-foreground">Thriving</strong> — 80%+ consistency (full size, bright glow, pulsing ring)</span>
+                                                </div>
+                                            </div>
+                                            <p className="mt-2">
+                                                As consistency rises, artifacts physically grow larger (up to 1.35x), their colors intensify, and they gain a glowing aura.
+                                            </p>
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    <AccordionItem value="eco-4">
+                                        <AccordionTrigger>What is Ecosystem Vitality?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>
+                                                <strong className="text-foreground">Ecosystem Vitality</strong> is the progress bar at the top of the ecosystem section. It represents the <em>average consistency</em> across all your active habit categories.
+                                            </p>
+                                            <p>
+                                                It controls the floating particle density in the background — higher vitality means more particles, creating a more "alive" atmosphere. The gradient color also changes:
+                                            </p>
+                                            <div className="space-y-1 mt-2">
+                                                <p>🔴 <strong className="text-foreground">0–30%</strong> — Red to orange gradient</p>
+                                                <p>🟡 <strong className="text-foreground">30–60%</strong> — Gold to pink gradient</p>
+                                                <p>🟢 <strong className="text-foreground">60%+</strong> — Green to purple to blue gradient</p>
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    <AccordionItem value="eco-5">
+                                        <AccordionTrigger>How do I build my ecosystem?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>Follow these steps to bring your ecosystem to life:</p>
+                                            <ol className="list-decimal list-inside space-y-2 mt-2">
+                                                <li><strong className="text-foreground">Create habits across different categories</strong> — Each category you add a habit to will "awaken" its dormant artifact.</li>
+                                                <li><strong className="text-foreground">Check in daily</strong> — Mark your habits as completed every day. Consistency over the last 30 days determines artifact growth.</li>
+                                                <li><strong className="text-foreground">Build streaks</strong> — Longer streaks mean higher consistency. The streak fire icon 🔥 appears on active categories.</li>
+                                                <li><strong className="text-foreground">Diversify categories</strong> — More active categories = more glowing artifacts = higher overall vitality.</li>
+                                                <li><strong className="text-foreground">Stay consistent</strong> — It only takes 24 days of check-ins in 30 days to reach "Thriving" status (80%).</li>
+                                            </ol>
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    <AccordionItem value="eco-6">
+                                        <AccordionTrigger>What are Rest Days?</AccordionTrigger>
+                                        <AccordionContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                                            <p>
+                                                <strong className="text-foreground">Rest Days</strong> are a special frequency option you can set when creating a habit. It allows you to take 1 random day off per week without breaking your streak.
+                                            </p>
+                                            <p>
+                                                This is perfect for habits like exercise where rest is actually beneficial. Your streak counter will skip over rest days when calculating your consistency.
+                                            </p>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
+                            </CardContent>
+                        </Card>
+
+                        {/* General FAQ */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>General FAQ</CardTitle>
+                                <CardDescription>Common questions about InnerStack.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Accordion type="single" collapsible className="w-full">
@@ -157,6 +316,12 @@ export function ProfilePage({ user, onLogout }) {
                                         <AccordionTrigger>Can I export my data?</AccordionTrigger>
                                         <AccordionContent>
                                             Currently, we support exporting your habit history as a JSON file. We are working on adding CSV export support soon.
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    <AccordionItem value="item-4">
+                                        <AccordionTrigger>What happens if I log on a non-scheduled day?</AccordionTrigger>
+                                        <AccordionContent>
+                                            If you try to log a habit on a day that's not part of your scheduled frequency (e.g., logging a Mon/Wed/Fri habit on a Tuesday), you'll see a confirmation dialog asking if you're sure. You can still log it — the activity will be recorded, but the day was not in your original plan.
                                         </AccordionContent>
                                     </AccordionItem>
                                 </Accordion>
