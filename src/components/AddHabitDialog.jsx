@@ -22,7 +22,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, CalendarIcon, Repeat, CalendarDays, Coffee, Target, Settings2 } from "lucide-react";
+import { Plus, CalendarIcon, Repeat, Settings2, Trophy, Clock, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDateLocal } from "@/lib/utils";
 
@@ -30,8 +30,15 @@ const ICONS = ["🎯", "💪", "📚", "🏃", "🧘", "💧", "🍎", "😴", "
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 
+const CHALLENGE_PRESETS = [
+    { label: "1 Week", days: 7 },
+    { label: "21 Days", days: 21 },
+    { label: "1 Month", days: 30 },
+    { label: "1 Year", days: 365 },
+];
+
 export function AddHabitDialog() {
-    const { habits, addHabit } = useHabits();
+    const { addHabit } = useHabits();
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
 
@@ -40,14 +47,10 @@ export function AddHabitDialog() {
     const [icon, setIcon] = useState("🎯");
     const [frequency, setFrequency] = useState("daily");
     const [customDays, setCustomDays] = useState([]);
-    const [targetCount, setTargetCount] = useState(3);
     const [targetDate, setTargetDate] = useState(null);
     const [category, setCategory] = useState("general");
-    const [repeatInterval, setRepeatInterval] = useState(1);
-    const [endsOption, setEndsOption] = useState("never");
-    const [endsDate, setEndsDate] = useState(null);
-    const [endsAfterCount, setEndsAfterCount] = useState(4);
-    const [restDaysPerWeek, setRestDaysPerWeek] = useState(1);
+    const [challengeDays, setChallengeDays] = useState(7);
+    const [isCustomChallenge, setIsCustomChallenge] = useState(false);
 
     const resetForm = () => {
         setStep(1);
@@ -56,14 +59,10 @@ export function AddHabitDialog() {
         setIcon("🎯");
         setFrequency("daily");
         setCustomDays([]);
-        setTargetCount(3);
         setTargetDate(null);
-        setCategory(category);
-        setRepeatInterval(1);
-        setEndsOption("never");
-        setEndsDate(null);
-        setEndsAfterCount(4);
-        setRestDaysPerWeek(1);
+        setCategory("general");
+        setChallengeDays(7);
+        setIsCustomChallenge(false);
     };
 
     const handleSubmit = () => {
@@ -74,14 +73,9 @@ export function AddHabitDialog() {
             icon,
             frequency,
             customDays,
-            targetCount,
             targetDate: targetDate ? formatDateLocal(targetDate) : null,
             category,
-            repeatInterval,
-            endsOption,
-            endsDate: endsDate ? formatDateLocal(endsDate) : null,
-            endsAfterCount,
-            restDaysPerWeek: frequency === "rest-day" ? restDaysPerWeek : 0,
+            duration: frequency === "challenge" ? challengeDays : null,
         });
         resetForm();
         setOpen(false);
@@ -104,32 +98,25 @@ export function AddHabitDialog() {
             color: "text-blue-500",
         },
         {
-            value: "weekly",
-            label: "Weekly",
-            description: "A set number of times per week",
-            icon: CalendarDays,
-            color: "text-violet-500",
-        },
-        {
             value: "custom",
             label: "Custom Days",
-            description: "e.g., Mon, Wed, Fri",
+            description: "Select which days to log",
             icon: Settings2,
             color: "text-emerald-500",
         },
         {
-            value: "rest-day",
-            label: "Rest Day",
-            description: "1 random rest day per week — streak preserved",
-            icon: Coffee,
-            color: "text-amber-500",
+            value: "challenge",
+            label: "Challenge Yourself",
+            description: "Set a goal for a specific period",
+            icon: Flag,
+            color: "text-purple-500",
         },
         {
-            value: "one-time",
-            label: "One-time",
-            description: "A single goal on a specific date",
-            icon: Target,
-            color: "text-rose-500",
+            value: "till-date",
+            label: "Till Date",
+            description: "Log daily till a target date",
+            icon: Clock,
+            color: "text-amber-500",
         },
     ];
 
@@ -211,7 +198,6 @@ export function AddHabitDialog() {
 
                 {step === 2 && (
                     <div className="grid gap-4 py-4">
-                        {/* Frequency options as styled cards */}
                         <RadioGroup value={frequency} onValueChange={setFrequency} className="grid gap-2.5">
                             {FREQUENCY_OPTIONS.map((opt) => {
                                 const Icon = opt.icon;
@@ -242,133 +228,87 @@ export function AddHabitDialog() {
                             })}
                         </RadioGroup>
 
-                        {/* Weekly: times per week */}
-                        {frequency === "weekly" && (
-                            <div className="grid gap-2 mt-1 p-3 rounded-lg bg-muted/30 border">
-                                <Label className="text-xs text-muted-foreground">Times per week</Label>
-                                <Select value={String(targetCount)} onValueChange={(v) => setTargetCount(Number(v))}>
-                                    <SelectTrigger className="h-9">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                                            <SelectItem key={n} value={String(n)}>{n}x per week</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-
-                        {/* Custom Days: full options */}
                         {frequency === "custom" && (
-                            <div className="space-y-4 mt-1 p-3.5 rounded-lg bg-muted/30 border">
-                                {/* Repeat interval */}
-                                <div className="flex items-center gap-2">
-                                    <Label className="text-xs text-muted-foreground whitespace-nowrap">Every</Label>
-                                    <Input
-                                        type="number"
-                                        min={1}
-                                        max={12}
-                                        value={repeatInterval}
-                                        onChange={(e) => setRepeatInterval(Math.max(1, Number(e.target.value)))}
-                                        className="w-16 h-8 text-center text-sm"
-                                    />
-                                    <Label className="text-xs text-muted-foreground">week(s)</Label>
-                                </div>
-
-                                {/* Day of week chips */}
-                                <div>
-                                    <Label className="text-xs text-muted-foreground mb-2 block">Repeat on</Label>
-                                    <div className="flex gap-1.5">
-                                        {DAYS.map((day, idx) => (
-                                            <button
-                                                key={day}
-                                                type="button"
-                                                onClick={() => toggleCustomDay(idx)}
-                                                className={cn(
-                                                    "w-9 h-9 rounded-full text-xs font-semibold transition-all flex items-center justify-center",
-                                                    customDays.includes(idx)
-                                                        ? "bg-primary text-primary-foreground shadow-md"
-                                                        : "bg-background border border-input text-muted-foreground hover:bg-muted"
-                                                )}
-                                            >
-                                                {DAY_LETTERS[idx]}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Ends option */}
-                                <div>
-                                    <Label className="text-xs text-muted-foreground mb-2 block">Ends</Label>
-                                    <RadioGroup value={endsOption} onValueChange={setEndsOption} className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <RadioGroupItem value="never" id="ends-never" />
-                                            <Label htmlFor="ends-never" className="text-sm cursor-pointer">Never</Label>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <RadioGroupItem value="on" id="ends-on" />
-                                            <Label htmlFor="ends-on" className="text-sm cursor-pointer">On</Label>
-                                            {endsOption === "on" && (
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button variant="outline" size="sm" className={cn("h-8 text-xs", !endsDate && "text-muted-foreground")}>
-                                                            <CalendarIcon className="mr-1.5 h-3 w-3" />
-                                                            {endsDate ? endsDate.toLocaleDateString() : "Pick date"}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar mode="single" selected={endsDate} onSelect={setEndsDate} initialFocus />
-                                                    </PopoverContent>
-                                                </Popover>
+                            <div className="mt-1 p-3.5 rounded-lg bg-muted/30 border">
+                                <Label className="text-xs text-muted-foreground mb-3 block">Repeat on</Label>
+                                <div className="flex gap-2">
+                                    {DAYS.map((day, idx) => (
+                                        <button
+                                            key={day}
+                                            type="button"
+                                            onClick={() => toggleCustomDay(idx)}
+                                            className={cn(
+                                                "w-10 h-10 rounded-full text-xs font-semibold transition-all flex items-center justify-center",
+                                                customDays.includes(idx)
+                                                    ? "bg-primary text-primary-foreground shadow-md"
+                                                    : "bg-background border border-input text-muted-foreground hover:bg-muted"
                                             )}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <RadioGroupItem value="after" id="ends-after" />
-                                            <Label htmlFor="ends-after" className="text-sm cursor-pointer">After</Label>
-                                            {endsOption === "after" && (
-                                                <div className="flex items-center gap-1.5">
-                                                    <Input
-                                                        type="number"
-                                                        min={1}
-                                                        max={999}
-                                                        value={endsAfterCount}
-                                                        onChange={(e) => setEndsAfterCount(Math.max(1, Number(e.target.value)))}
-                                                        className="w-16 h-8 text-center text-sm"
-                                                    />
-                                                    <span className="text-xs text-muted-foreground">times</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </RadioGroup>
+                                        >
+                                            {DAY_LETTERS[idx]}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Rest Day: explanation */}
-                        {frequency === "rest-day" && (
-                            <div className="p-3.5 rounded-lg bg-amber-500/5 border border-amber-500/20 mt-1">
-                                <div className="flex items-start gap-2.5">
-                                    <Coffee className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                                    <div className="space-y-1.5">
-                                        <p className="text-sm text-foreground font-medium">Rest Day Mode</p>
-                                        <p className="text-xs text-muted-foreground leading-relaxed">
-                                            This habit works like a daily habit, but you're allowed <strong>1 random rest day per week</strong> without breaking your streak. Perfect for exercise or intense study routines.
-                                        </p>
-                                    </div>
+                        {frequency === "challenge" && (
+                            <div className="space-y-4 mt-1 p-3.5 rounded-lg bg-purple-500/5 border border-purple-500/20">
+                                <div className="flex items-start gap-2.5 mb-2">
+                                    <Trophy className="h-4 w-4 text-purple-500 mt-0.5" />
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Complete this challenge to earn a special badge!
+                                    </p>
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    {CHALLENGE_PRESETS.map((preset) => (
+                                        <Button
+                                            key={preset.days}
+                                            type="button"
+                                            variant={challengeDays === preset.days && !isCustomChallenge ? "default" : "outline"}
+                                            className="text-xs h-9"
+                                            onClick={() => {
+                                                setChallengeDays(preset.days);
+                                                setIsCustomChallenge(false);
+                                            }}
+                                        >
+                                            {preset.label}
+                                        </Button>
+                                    ))}
+                                    <Button
+                                        type="button"
+                                        variant={isCustomChallenge ? "default" : "outline"}
+                                        className="text-xs h-9"
+                                        onClick={() => setIsCustomChallenge(true)}
+                                    >
+                                        Custom
+                                    </Button>
+                                </div>
+
+                                {isCustomChallenge && (
+                                    <div className="pt-2">
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block">Number of days</Label>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            max={999}
+                                            value={challengeDays}
+                                            onChange={(e) => setChallengeDays(Math.max(1, Number(e.target.value)))}
+                                            className="h-9 text-sm"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
 
-                        {/* One-time: target date */}
-                        {frequency === "one-time" && (
+                        {frequency === "till-date" && (
                             <div className="grid gap-2 mt-1 p-3 rounded-lg bg-muted/30 border">
-                                <Label className="text-xs text-muted-foreground">Target Date</Label>
+                                <Label className="text-xs text-muted-foreground">Log daily until</Label>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className={cn("justify-start text-left font-normal h-9", !targetDate && "text-muted-foreground")}>
                                             <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {targetDate ? targetDate.toLocaleDateString() : "Pick a date"}
+                                            {targetDate ? targetDate.toLocaleDateString() : "Select end date"}
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0">

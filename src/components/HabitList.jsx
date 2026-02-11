@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useHabits } from "@/context/HabitContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link2, Flame, AlertCircle } from "lucide-react";
+import { Link2, Flame, AlertCircle, Flag } from "lucide-react";
 import { TaskDetailDialog } from "./TaskDetailDialog";
 import {
     Dialog,
@@ -84,12 +84,19 @@ export function HabitList({ habits, date }) {
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-3">
                                     <span className="text-xl opacity-90">{habit.icon}</span>
-                                    <span
-                                        className={`font-medium text-lg truncate transition-colors ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"
-                                            }`}
-                                    >
-                                        {habit.name}
-                                    </span>
+                                    <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={`font-medium text-lg truncate transition-colors ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"
+                                                    }`}
+                                            >
+                                                {habit.name}
+                                            </span>
+                                            {habit.isChallenge && (
+                                                <Flag className="h-4 w-4 text-purple-500 fill-purple-500/20" />
+                                            )}
+                                        </div>
+                                    </div>
                                     {habit.chainFromId && (
                                         <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full" title={`Linked to: ${parentName}`}>
                                             <Link2 className="h-3 w-3" />

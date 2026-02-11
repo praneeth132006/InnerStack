@@ -19,35 +19,36 @@ const getDayOfWeek = (dateStr) => {
 };
 
 const isHabitDueOnDate = (habit, dateStr) => {
-    // 1. Check if habit has ended
+    // 1. Check if habit has ended (for standard habits with end dates)
     if (habit.endsOption === "on" && habit.endsDate && dateStr > habit.endsDate) return false;
     if (habit.endsOption === "after" && habit.endsAfterCount) {
         const completions = Object.values(habit.history || {}).filter(Boolean).length;
         if (completions >= habit.endsAfterCount && !habit.history?.[dateStr]) return false;
     }
 
-    // 2. Check if habit is in a repeat interval week (for custom/daily/weekly)
-    if (habit.repeatInterval && habit.repeatInterval > 1 && habit.createdAt) {
+    // 2. Till-Date Frequency: Due daily until the specified end date
+    if (habit.frequency === "till-date") {
+        if (!habit.targetDate) return true;
+        return dateStr <= habit.targetDate;
+    }
+
+    // 3. Challenge Frequency: Due daily for the duration of the challenge
+    if (habit.frequency === "challenge") {
+        if (!habit.createdAt) return true;
         const start = new Date(habit.createdAt);
         start.setHours(0, 0, 0, 0);
         const current = new Date(dateStr);
         current.setHours(0, 0, 0, 0);
 
-        // Calculate weeks since creation
         const msPerDay = 24 * 60 * 60 * 1000;
         const diffDays = Math.floor((current - start) / msPerDay);
-        const weeksSince = Math.floor(diffDays / 7);
 
-        if (weeksSince % habit.repeatInterval !== 0) return false;
+        return diffDays >= 0 && diffDays < (habit.duration || 7);
     }
 
-    // 3. Check frequency specific logic
+    // 4. Check frequency specific logic
     if (habit.frequency === "daily") return true;
-    if (habit.frequency === "rest-day") return true; // Act like daily, streak logic handles the rest
-    if (habit.frequency === "one-time") {
-        return habit.targetDate === dateStr && !habit.history?.[dateStr];
-    }
-    if (habit.frequency === "weekly") return true;
+    if (habit.frequency === "rest-day") return true;
     if (habit.frequency === "custom") {
         const dayOfWeek = getDayOfWeek(dateStr);
         return habit.customDays?.includes(dayOfWeek);
@@ -57,9 +58,7 @@ const isHabitDueOnDate = (habit, dateStr) => {
 
 const isRestrictedDay = (habit, dateStr) => {
     // A restricted day is one where the habit is NOT due according to its frequency settings
-    // But we still allow viewing/logging with confirmation
-    if (habit.frequency === "daily" || habit.frequency === "rest-day" || habit.frequency === "weekly") return false;
-    if (habit.frequency === "one-time") return habit.targetDate !== dateStr;
+    if (habit.frequency === "daily" || habit.frequency === "rest-day" || habit.frequency === "till-date" || habit.frequency === "challenge") return false;
     if (habit.frequency === "custom") {
         const isDue = isHabitDueOnDate(habit, dateStr);
         return !isDue;
@@ -126,6 +125,9 @@ export function HabitProvider({ children }) {
             endsDate: habit.endsDate || null,
             endsAfterCount: habit.endsAfterCount || 0,
             restDaysPerWeek: habit.restDaysPerWeek || 0,
+            isChallenge: habit.frequency === "challenge",
+            duration: habit.duration || null,
+            badgeAwarded: false,
             history: {},
         };
 
@@ -170,11 +172,20 @@ export function HabitProvider({ children }) {
             newHistory[date] = true;
         }
 
+        // Challenge completion logic
+        let updates = { history: newHistory };
+        if (habit.frequency === "challenge" && !habit.badgeAwarded) {
+            const totalCompletions = Object.values(newHistory).filter(Boolean).length;
+            if (totalCompletions >= (habit.duration || 7)) {
+                updates.badgeAwarded = true;
+            }
+        }
+
         if (firebaseEnabled && user) {
-            await updateHabitInDb(user.uid, id, { history: newHistory });
+            await updateHabitInDb(user.uid, id, updates);
         } else {
             setHabits((prev) =>
-                prev.map((h) => (h.id === id ? { ...h, history: newHistory } : h))
+                prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
             );
         }
     }, [habits, firebaseEnabled, user]);

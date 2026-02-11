@@ -7,7 +7,7 @@ import { CalendarHeatmap } from "./CalendarHeatmap";
 import { DashboardStats } from "./DashboardStats";
 import { HabitEcosystem } from "./HabitEcosystem";
 import { HabitMatrix } from "./HabitMatrix"; // Replaces MonthCalendar and List view for history
-import { Calendar, LayoutGrid, List } from "lucide-react";
+import { Calendar, LayoutGrid, List, Flag, Trophy } from "lucide-react";
 import { formatDateLocal } from "@/lib/utils";
 
 function getToday() {
@@ -16,7 +16,7 @@ function getToday() {
 
 const VIEW_OPTIONS = [
     { value: "today", label: "Today" },
-    // Week view removed as per request
+    { value: "challenges", label: "Challenges" },
     { value: "month", label: "Month" },
     { value: "year", label: "Year" },
     { value: "all", label: "All" },
@@ -29,6 +29,8 @@ export function Dashboard({ user }) {
 
     // Data filtering
     const todaysHabits = useMemo(() => getTodaysHabits(), [habits]);
+    const challenges = useMemo(() => habits.filter(h => h.isChallenge), [habits]);
+    const standardHabits = useMemo(() => habits.filter(h => !h.isChallenge), [habits]);
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-black text-white selection:bg-primary/30">
@@ -100,15 +102,53 @@ export function Dashboard({ user }) {
                             </div>
                         )}
 
+                        {view === "challenges" && (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in space-y-8">
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <div className="bg-primary/20 p-1.5 rounded-lg">
+                                            <Flag className="h-4.5 w-4.5 text-primary" />
+                                        </div>
+                                        Active Challenges
+                                    </h2>
+                                    <HabitList habits={challenges.filter(c => !c.badgeAwarded)} date={today} />
+                                    {challenges.filter(c => !c.badgeAwarded).length === 0 && (
+                                        <p className="text-slate-500 text-sm py-8 text-center border-2 border-dashed rounded-xl">No active challenges. Start one to push your limits!</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-4 pt-4 border-t border-white/5">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <div className="bg-amber-500/20 p-1.5 rounded-lg">
+                                            <Trophy className="h-4.5 w-4.5 text-amber-500" />
+                                        </div>
+                                        Awarded Badges
+                                    </h2>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                        {challenges.filter(c => c.badgeAwarded).map(c => (
+                                            <div key={c.id} className="bg-white/5 p-4 rounded-2xl border border-white/10 flex flex-col items-center text-center gap-2 hover:bg-white/10 transition-colors">
+                                                <div className="text-4xl filter drop-shadow-lg scale-110 mb-1">🏅</div>
+                                                <span className="font-bold text-sm truncate w-full">{c.name}</span>
+                                                <span className="text-[10px] uppercase tracking-wider text-amber-500 font-bold">Challenge Complete</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {challenges.filter(c => c.badgeAwarded).length === 0 && (
+                                        <p className="text-slate-500 text-sm py-8 text-center">Complete challenges to earn badges!</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {view === "month" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                                <HabitMatrix habits={habits} mode="month" />
+                                <HabitMatrix habits={standardHabits} mode="month" />
                             </div>
                         )}
 
                         {view === "year" && (
                             <div className="animate-in slide-in-from-bottom-4 duration-500 fade-in space-y-8">
-                                {habits.map((habit) => (
+                                {standardHabits.map((habit) => (
                                     <div key={habit.id} className="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-xl hover:shadow-primary/5 transition-shadow duration-500">
                                         <CalendarHeatmap
                                             specificHabitId={habit.id}
@@ -117,7 +157,7 @@ export function Dashboard({ user }) {
                                         />
                                     </div>
                                 ))}
-                                {habits.length === 0 && (
+                                {standardHabits.length === 0 && (
                                     <div className="bg-white/5 p-12 rounded-2xl border border-white/5 text-center text-slate-500">
                                         No habits found. Start tracking to see yearly data!
                                     </div>
@@ -130,11 +170,11 @@ export function Dashboard({ user }) {
                                 <div className="mb-4 flex items-center justify-between">
                                     <h2 className="text-xl font-semibold flex items-center gap-2">
                                         <LayoutGrid className="h-5 w-5 text-primary" />
-                                        All Habits
+                                        All Routines
                                     </h2>
-                                    <span className="text-slate-400 text-sm">{habits.length} total</span>
+                                    <span className="text-slate-400 text-sm">{standardHabits.length} total</span>
                                 </div>
-                                <HabitList habits={habits} date={today} />
+                                <HabitList habits={standardHabits} date={today} />
                             </div>
                         )}
                     </div>
